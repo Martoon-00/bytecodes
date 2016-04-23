@@ -1,6 +1,7 @@
 import org.objectweb.asm.Opcodes;
 import util.Cache;
 import util.Frame;
+import util.effect.EffectsCollector;
 import util.except.OpcodeNotSupportedException;
 import util.ref.*;
 import util.ref.consts.NullConst;
@@ -8,10 +9,12 @@ import util.ref.consts.NullConst;
 public class NoOpInst {
     private final Cache cache;
     private final Frame frame;
+    private final EffectsCollector effects;
 
-    public NoOpInst(Cache cache, Frame frame) {
+    public NoOpInst(Cache cache, Frame frame, EffectsCollector effects) {
         this.cache = cache;
         this.frame = frame;
+        this.effects = effects;
     }
 
     public void apply(int opcode) {
@@ -277,26 +280,17 @@ public class NoOpInst {
 
             // return
             case Opcodes.IRETURN:
-
-                break;
             case Opcodes.LRETURN:
-
-                break;
             case Opcodes.FRETURN:
-
-                break;
             case Opcodes.DRETURN:
-
-                break;
             case Opcodes.ARETURN:
-
-                break;
             case Opcodes.RETURN:
-
+                effects.addReturnValue(frame.popStack());
                 break;
 
             // array length
             case Opcodes.ARRAYLENGTH:
+                // objref -> objref
                 break;
 
             // throw

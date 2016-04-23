@@ -15,6 +15,8 @@ public class MethodScanner extends MethodVisitor {
     private final Frame frame = new Frame("", new ArrayList<>());
     private final EffectsCollector effects = new EffectsCollector();
 
+    private final NoOpInst noOpInst = new NoOpInst(cache, frame, effects);
+
     public MethodScanner() {
         super(Opcodes.ASM4);
     }
@@ -36,7 +38,7 @@ public class MethodScanner extends MethodVisitor {
 
     @Override
     public void visitInsn(int opcode) {
-        NoOpInst.apply(frame, opcode);
+        noOpInst.apply(opcode);
     }
 
     @Override
