@@ -1,12 +1,15 @@
 import jdk.internal.org.objectweb.asm.*;
 import util.Cache;
 import util.Frame;
+import util.NoOpInst;
+import util.RefType;
 import util.effect.EffectsCollector;
-import util.except.OpcodeNotSupportedException;
+import util.except.UnsupportedOpcodeException;
 import util.except.UnknownConstSort;
 import util.except.UnknownConstType;
-import util.ref.Any;
-import util.ref.expr.IincExpr;
+import util.ref.Arbitrary;
+import util.ref.Ref;
+import util.ref.UnaryOpRef;
 
 import java.util.ArrayList;
 
@@ -51,10 +54,10 @@ public class MethodScanner extends MethodVisitor {
                 frame.pushStack(cache.constOf((short) operand));
                 break;
             case Opcodes.NEWARRAY:
-                frame.replaceStack(1, Any.val());
+                frame.replaceStack(1, Arbitrary.val(RefType.OBJECTREF));
                 break;
             default:
-                throw new OpcodeNotSupportedException(opcode);
+                throw new UnsupportedOpcodeException(opcode);
         }
     }
 
@@ -68,22 +71,20 @@ public class MethodScanner extends MethodVisitor {
                 frame.pushStack(frame.getLocal(var));
                 break;
             case Opcodes.ALOAD:
-                frame.pushStack(Any.val());
+                frame.pushStack(Arbitrary.val(RefType.OBJECTREF));
                 break;
             case Opcodes.ISTORE:
             case Opcodes.FSTORE:
             case Opcodes.LSTORE:
             case Opcodes.DSTORE:
+            case Opcodes.ASTORE:
                 frame.setLocal(var, frame.popStack());
                 break;
-            case Opcodes.ASTORE:
-                frame.setLocal(var, Any.val());
-                break;
             case Opcodes.RET:
-                effects.addReturnValue(frame.popStack());
+                // TODO: jmp
                 break;
             default:
-                throw new OpcodeNotSupportedException(opcode);
+                throw new UnsupportedOpcodeException(opcode);
         }
     }
 
@@ -91,20 +92,19 @@ public class MethodScanner extends MethodVisitor {
     public void visitTypeInsn(int opcode, String type) {
         switch (opcode) {
             case Opcodes.NEW:
-                frame.pushStack(Any.val());
+                frame.pushStack(Arbitrary.val(RefType.OBJECTREF));
                 break;
             case Opcodes.ANEWARRAY:
-                frame.replaceStack(1, Any.val());
+                frame.replaceStack(1, Arbitrary.val(RefType.OBJECTREF));
                 break;
             case Opcodes.CHECKCAST:
                 // objref -> objref
                 break;
             case Opcodes.INSTANCEOF:
-                frame.pushStack(Any.val());
-                // Maybe just 0 and 1?
+                frame.pushStack(Arbitrary.val(RefType.BOOLEAN));
                 break;
             default:
-                throw new OpcodeNotSupportedException(opcode);
+                throw new UnsupportedOpcodeException(opcode);
         }
     }
 
@@ -133,9 +133,9 @@ public class MethodScanner extends MethodVisitor {
         } else if (cst instanceof Type) {
             int sort = ((Type) cst).getSort();
             if (sort == Type.OBJECT) {
-                frame.pushStack(Any.val());
+                frame.pushStack(Arbitrary.val(RefType.OBJECTREF));
             } else if (sort == Type.ARRAY) {
-                frame.pushStack(Any.val());
+                frame.pushStack(Arbitrary.val(RefType.OBJECTREF));
             } else if (sort == Type.METHOD) {
                 // TODO:
             } else {
@@ -150,14 +150,15 @@ public class MethodScanner extends MethodVisitor {
     }
 
     @Override
-    public void visitIincInsn(int var, int increment) {
-        IincExpr newVal = new IincExpr(frame.getLocal(var), increment);
-        frame.setLocal(var, newVal);
+    public void visitIincInsn(int index, int delta) {
+        Ref oldVal = frame.getLocal(index);
+        UnaryOpRef newVal = UnaryOpRef.of(a -> (int) a + delta, oldVal, RefType.INT);
+        frame.setLocal(index, newVal);
     }
 
     @Override
     public void visitMultiANewArrayInsn(String desc, int dims) {
-        frame.replaceStack(dims, Any.val());
+        frame.replaceStack(dims, Arbitrary.val(RefType.OBJECTREF));
     }
 
     @Override

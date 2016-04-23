@@ -1,4 +1,4 @@
-package util.ref;
+package util;
 
 public class MethodRef {
     private final String name;

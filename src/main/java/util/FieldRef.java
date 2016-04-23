@@ -1,4 +1,4 @@
-package util.ref;
+package util;
 
 public class FieldRef {
     private final String name;

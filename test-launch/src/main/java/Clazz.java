@@ -3,12 +3,13 @@ public class Clazz {
         System.out.println(new Clazz().a());
     }
 
-    private int a() {
-        long k = 5;
-        return b(4, 6, (byte) k).length();
+    private boolean a() {
+        String lol = "qwe";
+        boolean p = lol instanceof Object;
+        return p;
     }
 
-    private String b(int a, int b, byte c) {
-        return a + " - " + b;
-    }
+//    private String b(int a, int b, byte c) {
+//        return a + " - " + b;
+//    }
 }

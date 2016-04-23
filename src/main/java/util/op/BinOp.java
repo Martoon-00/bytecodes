@@ -1,4 +1,4 @@
-package util.ref;
+package util.op;
 
 @FunctionalInterface
 public interface BinOp {

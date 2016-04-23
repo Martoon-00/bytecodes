@@ -1,6 +1,6 @@
 package util.effect;
 
-import util.ref.MethodRef;
+import util.MethodRef;
 import util.ref.Ref;
 
 import java.util.List;

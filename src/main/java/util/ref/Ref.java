@@ -1,5 +1,15 @@
 package util.ref;
 
-public interface Ref {
-    Object value();
+import util.RefType;
+
+public abstract class Ref {
+    private final RefType type;
+
+    public Ref(RefType type) {
+        this.type = type;
+    }
+
+    public RefType getType() {
+        return type;
+    }
 }

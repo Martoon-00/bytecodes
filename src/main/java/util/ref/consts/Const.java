@@ -1,11 +1,18 @@
 package util.ref.consts;
 
-import util.ref.Ref;
+import util.RefType;
+import util.ref.EvalRef;
 
-public class Const implements Ref {
+public class Const extends EvalRef {
     private final Object value;
 
-    public Const(Object value) {
+    public Const(Object value, RefType type) {
+        super(type);
         this.value = value;
+    }
+
+    @Override
+    public Object value() {
+        return value;
     }
 }

@@ -1,10 +1,14 @@
 package util.ref;
 
-public class MethodParamRef implements Ref {
+import util.MethodRef;
+import util.RefType;
+
+public class MethodParamRef extends Ref {
     private final MethodRef method;
     private final int index;
 
-    public MethodParamRef(MethodRef method, int index) {
+    public MethodParamRef(MethodRef method, int index, RefType type) {
+        super(type);
         this.method = method;
         this.index = index;
     }
