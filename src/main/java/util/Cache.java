@@ -31,7 +31,6 @@ public class Cache {
         return k;
     }
 
-
     public Const constOf(byte k) {
         return new Const(get(k), RefType.BYTE);
     }
@@ -61,4 +60,12 @@ public class Cache {
     }
 
 
+
+    public Object get(Object k, RefType type) {
+        throw new RuntimeException("Aaa, implement this");
+    }
+
+    public Const constOf(Object k, RefType type) {
+        throw new RuntimeException("Aaa, implement this");
+    }
 }

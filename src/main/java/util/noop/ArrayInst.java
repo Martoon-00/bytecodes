@@ -9,7 +9,8 @@ import util.ref.Arbitrary;
 import java.util.function.IntPredicate;
 
 public class ArrayInst {
-    private static final IntPredicate isloadInst = opcode -> opcode < 60;
+    private static final IntPredicate isloadInst = opcode -> opcode >= 46 && opcode <= 53;
+    private static final IntPredicate isStoreInst = opcode -> opcode >= 79 && opcode <= 86;
 
     private final Frame frame;
 
@@ -50,9 +51,9 @@ public class ArrayInst {
                     throw new UnsupportedOpcodeException(opcode);
             }
             frame.replaceStack(2, Arbitrary.val(type));
-        } else {
+        } else if (isStoreInst.test(opcode)){
             // store to array instruction
             frame.replaceStack(3);
-        }
+        } else throw new UnsupportedOpcodeException(opcode);
     }
 }

@@ -1,12 +1,12 @@
-import jdk.internal.org.objectweb.asm.*;
+import org.objectweb.asm.*;
 import util.Cache;
 import util.Frame;
-import util.NoOpInst;
 import util.RefType;
 import util.effect.EffectsCollector;
-import util.except.UnsupportedOpcodeException;
 import util.except.UnknownConstSort;
 import util.except.UnknownConstType;
+import util.except.UnsupportedOpcodeException;
+import util.noop.NoOpInst;
 import util.ref.Arbitrary;
 import util.ref.Ref;
 import util.ref.UnaryOpRef;
@@ -98,7 +98,6 @@ public class MethodScanner extends MethodVisitor {
                 frame.replaceStack(1, Arbitrary.val(RefType.OBJECTREF));
                 break;
             case Opcodes.CHECKCAST:
-                // objref -> objref
                 break;
             case Opcodes.INSTANCEOF:
                 frame.pushStack(Arbitrary.val(RefType.BOOLEAN));
@@ -108,6 +107,7 @@ public class MethodScanner extends MethodVisitor {
         }
     }
 
+    // TODO: implement next 3:
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
         super.visitFieldInsn(opcode, owner, name, desc);
@@ -116,6 +116,11 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
         super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
+    }
+
+    @Override
+    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+        super.visitMethodInsn(opcode, owner, name, desc);
     }
 
     @Override
