@@ -1,6 +1,8 @@
 package util.ref.consts;
 
-public class NullConst implements Const {
+import util.ref.Ref;
+
+public class NullConst implements Ref {
     private NullConst() {
     }
 

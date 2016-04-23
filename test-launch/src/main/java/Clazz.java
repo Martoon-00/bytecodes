@@ -4,12 +4,11 @@ public class Clazz {
     }
 
     private int a() {
-        double k = 2;
-        int l = 3;
-        return b(4, 6, k < l).length();
+        long k = 5;
+        return b(4, 6, (byte) k).length();
     }
 
-    private String b(int a, int b, boolean c) {
+    private String b(int a, int b, byte c) {
         return a + " - " + b;
     }
 }

@@ -3,9 +3,9 @@ import util.Cache;
 import util.Frame;
 import util.effect.EffectsCollector;
 import util.except.OpcodeNotSupportedException;
+import util.except.UnknownConstSort;
 import util.except.UnknownConstType;
 import util.ref.Any;
-import util.ref.consts.*;
 import util.ref.expr.IincExpr;
 
 import java.util.ArrayList;
@@ -43,10 +43,10 @@ public class MethodScanner extends MethodVisitor {
     public void visitIntInsn(int opcode, int operand) {
         switch (opcode) {
             case Opcodes.BIPUSH:
-                frame.pushStack(new ByteConst((byte) operand));
+                frame.pushStack(cache.constOf((byte) operand));
                 break;
             case Opcodes.SIPUSH:
-                frame.pushStack(new ShortConst((short) operand));
+                frame.pushStack(cache.constOf((short) operand));
                 break;
             case Opcodes.NEWARRAY:
                 frame.replaceStack(1, Any.val());
@@ -119,29 +119,28 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitLdcInsn(Object cst) {
         if (cst instanceof Integer) {
-            frame.pushStack(IntConst.of((int) cst));
+            frame.pushStack(cache.constOf((int) cst));
         } else if (cst instanceof Float) {
-            frame.pushStack( FloatConst.of((float) cst));
+            frame.pushStack(cache.constOf((float) cst));
         } else if (cst instanceof Long) {
-            frame.pushStack(LongConst.of((long) cst));
+            frame.pushStack(cache.constOf((long) cst));
         } else if (cst instanceof Double) {
-            frame.pushStack(DoubleConst.of((double) cst));
+            frame.pushStack(cache.constOf((double) cst));
         } else if (cst instanceof String) {
-            frame.pushStack(StringConst.of((String) cst));
+            frame.pushStack(cache.constOf((String) cst));
         } else if (cst instanceof Type) {
-            // TODO:
             int sort = ((Type) cst).getSort();
             if (sort == Type.OBJECT) {
-                // ...
+                frame.pushStack(Any.val());
             } else if (sort == Type.ARRAY) {
-                // ...
+                frame.pushStack(Any.val());
             } else if (sort == Type.METHOD) {
-                // ...
+                // TODO:
             } else {
-                // throw an exception
+                throw new UnknownConstSort(cst, sort);
             }
         } else if (cst instanceof Handle) {
-            // ...
+            // TODO
         } else {
             throw new UnknownConstType(cst);
         }
