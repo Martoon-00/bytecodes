@@ -1,27 +1,38 @@
 import org.objectweb.asm.*;
 import util.Cache;
-import util.Frame;
+import util.FieldRef;
+import util.MethodRef;
 import util.RefType;
 import util.effect.EffectsCollector;
+import util.effect.FieldAssignEffect;
+import util.effect.MethodCallEffect;
 import util.except.UnknownConstSort;
 import util.except.UnknownConstType;
 import util.except.UnsupportedOpcodeException;
+import util.frame.Frame;
+import util.frame.MutableFrame;
 import util.noop.NoOpInst;
 import util.ref.Arbitrary;
 import util.ref.Ref;
+import util.ref.ReturnValRef;
 import util.ref.UnaryOpRef;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class MethodScanner extends MethodVisitor {
     private final Cache cache = new Cache();
-    private final Frame frame = new Frame("", new ArrayList<>());
+    private final Frame frame;
     private final EffectsCollector effects = new EffectsCollector();
 
-    private final NoOpInst noOpInst = new NoOpInst(cache, frame, effects);
+    private final Set<Label> visitedLabels = new HashSet<>();
+    private final Map<Label, Frame> expectedLabels = new HashMap<>();
 
-    public MethodScanner() {
+    private final NoOpInst noOpInst;
+
+    public MethodScanner(MethodRef method, List<Ref> params) {
         super(Opcodes.ASM4);
+        frame = new MutableFrame(method, params);
+        noOpInst = new NoOpInst(cache, frame, effects);
     }
 
     @Override
@@ -68,10 +79,8 @@ public class MethodScanner extends MethodVisitor {
             case Opcodes.FLOAD:
             case Opcodes.LLOAD:
             case Opcodes.DLOAD:
-                frame.pushStack(frame.getLocal(var));
-                break;
             case Opcodes.ALOAD:
-                frame.pushStack(Arbitrary.val(RefType.OBJECTREF));
+                frame.pushStack(frame.getLocal(var));
                 break;
             case Opcodes.ISTORE:
             case Opcodes.FSTORE:
@@ -107,20 +116,53 @@ public class MethodScanner extends MethodVisitor {
         }
     }
 
-    // TODO: implement next 3:
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-        super.visitFieldInsn(opcode, owner, name, desc);
+        RefType type = RefType.fromAsmType(Type.getType(desc));
+        FieldRef field = FieldRef.of(owner, name, type);
+
+        switch (opcode) {
+            case Opcodes.GETFIELD:
+                frame.popStack();
+            case Opcodes.GETSTATIC:
+                frame.pushStack(field);
+                break;
+            case Opcodes.PUTFIELD:
+                frame.popStack();
+            case Opcodes.PUTSTATIC:
+                FieldAssignEffect assign = FieldAssignEffect.of(field, frame.popStack());
+                effects.addFieldAssign(assign);
+                break;
+        }
     }
 
     @Override
     public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
+        // TODO
         super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
     }
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-        super.visitMethodInsn(opcode, owner, name, desc);
+        MethodRef method = MethodRef.of(owner, name);
+        ArrayList<Ref> params = new ArrayList<>();
+        Type methodType = Type.getMethodType(desc);
+
+        if (opcode != Opcodes.INVOKESTATIC)
+            params.add(frame.popStack());
+        for (Type type : methodType.getArgumentTypes()) {
+            params.add(frame.popStack());
+        }
+        Collections.reverse(params);
+
+        Type returnType = methodType.getReturnType();
+        if (!Type.VOID_TYPE.equals(returnType)) {
+            ReturnValRef ret = new ReturnValRef(method, params, RefType.fromAsmType(returnType));
+            frame.pushStack(ret);
+        }
+
+        MethodCallEffect effect = new MethodCallEffect(method, params);
+        effects.addMethodCall(effect);
     }
 
     @Override
@@ -169,6 +211,72 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
         super.visitLocalVariable(name, desc, signature, start, end, index);
+    }
+
+    @Override
+    public void visitLabel(Label label) {
+        visitedLabels.add(label);
+
+        Frame expectedFrame = expectedLabels.remove(label);
+        if (expectedFrame != null) {
+            frame.merge(expectedFrame);
+        }
+    }
+
+    @Override
+    public void visitJumpInsn(int opcode, Label label) {
+        boolean conditional;
+        switch (opcode) {
+            case Opcodes.IFEQ:
+            case Opcodes.IFNE:
+            case Opcodes.IFLT:
+            case Opcodes.IFGE:
+            case Opcodes.IFGT:
+            case Opcodes.IFLE:
+            case Opcodes.IFNULL:
+            case Opcodes.IFNONNULL:
+                frame.popStack();
+                conditional = true;
+                break;
+            case Opcodes.IF_ICMPEQ:
+            case Opcodes.IF_ICMPNE:
+            case Opcodes.IF_ICMPLT:
+            case Opcodes.IF_ICMPGE:
+            case Opcodes.IF_ICMPGT:
+            case Opcodes.IF_ICMPLE:
+            case Opcodes.IF_ACMPEQ:
+            case Opcodes.IF_ACMPNE:
+                frame.replaceStack(2);
+                conditional = true;
+                break;
+            case Opcodes.JSR:
+                frame.pushStack(Arbitrary.val(RefType.OBJECTREF));
+            case Opcodes.GOTO:
+                conditional = false;
+                break;
+            default:
+                throw new UnsupportedOpcodeException(opcode);
+        }
+
+        if (!visitedLabels.contains(label)) {
+            Frame expectedFrame = expectedLabels.get(label);
+            Frame addedFrame;
+            if (expectedFrame != null) {
+                expectedFrame.merge(frame);
+                addedFrame = frame;
+            } else {
+                addedFrame = frame.copy();
+            }
+            expectedLabels.put(label, addedFrame);
+        }
+        if (!conditional) {
+            frame.setInVacuum();
+        }
+
+//        Frame otherBranchFrame = expectedLabels.get(label);
+//        if (otherBranchFrame != null) {
+//            frame.merge(otherBranchFrame);
+//        }
     }
 
     @Override

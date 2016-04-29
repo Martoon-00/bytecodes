@@ -1,11 +1,11 @@
 package util.noop;
 
 import org.objectweb.asm.Opcodes;
-import util.Frame;
+import util.frame.Frame;
 import util.except.IllegalStackManipulationException;
 import util.ref.Ref;
 
-public class StackModInst {
+class StackModInst {
     private final Frame frame;
 
     public StackModInst(Frame frame) {

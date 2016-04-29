@@ -2,12 +2,18 @@ package util;
 
 import util.ref.consts.Const;
 
+import static util.RefType.OBJECTREF;
+
 public class Cache {
     public Byte get(Byte k) {
         return k;
     }
 
     public Short get(Short k) {
+        return k;
+    }
+
+    public Character get(Character k) {
         return k;
     }
 
@@ -56,16 +62,35 @@ public class Cache {
     }
 
     public Const constOf(String k) {
-        return new Const(get(k), RefType.OBJECTREF);
+        return new Const(get(k), OBJECTREF);
     }
 
 
-
-    public Object get(Object k, RefType type) {
-        throw new RuntimeException("Aaa, implement this");
+    public Object get(Object v, RefType type) {
+        switch (type) {
+            case BYTE:
+                return get((byte) v);
+            case SHORT:
+                return get((short) v);
+            case CHAR:
+                return get((char) v);
+            case BOOLEAN:
+            case INT:
+                return get((int) v);
+            case LONG:
+                return get((long) v);
+            case FLOAT:
+                return get((float) v);
+            case DOUBLE:
+                return get((double) v);
+            case OBJECTREF:
+                return v;
+            default:
+                throw new RuntimeException("Unknown type: " + type);
+        }
     }
 
     public Const constOf(Object k, RefType type) {
-        throw new RuntimeException("Aaa, implement this");
+        return new Const(get(k, type), type);
     }
 }

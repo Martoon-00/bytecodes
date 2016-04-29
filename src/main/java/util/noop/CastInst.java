@@ -1,15 +1,16 @@
 package util.noop;
 
+
 import org.objectweb.asm.Opcodes;
 import util.Cache;
-import util.Frame;
 import util.RefType;
 import util.except.UnsupportedOpcodeException;
+import util.frame.Frame;
 import util.op.UnaryOp;
 import util.ref.Ref;
 import util.ref.UnaryOpRef;
 
-public class CastInst {
+class CastInst {
     private final Cache cache;
     private final Frame frame;
 

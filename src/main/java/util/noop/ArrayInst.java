@@ -1,14 +1,15 @@
 package util.noop;
 
+
 import org.objectweb.asm.Opcodes;
-import util.Frame;
 import util.RefType;
 import util.except.UnsupportedOpcodeException;
+import util.frame.Frame;
 import util.ref.Arbitrary;
 
 import java.util.function.IntPredicate;
 
-public class ArrayInst {
+class ArrayInst {
     private static final IntPredicate isloadInst = opcode -> opcode >= 46 && opcode <= 53;
     private static final IntPredicate isStoreInst = opcode -> opcode >= 79 && opcode <= 86;
 

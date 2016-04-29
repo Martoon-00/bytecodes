@@ -3,7 +3,8 @@ package util.ref;
 import util.RefType;
 
 public abstract class Ref {
-    private final RefType type;
+    protected final RefType type;
+    protected boolean invalid;
 
     public Ref(RefType type) {
         this.type = type;
@@ -11,5 +12,9 @@ public abstract class Ref {
 
     public RefType getType() {
         return type;
+    }
+
+    public void invalidate() {
+        invalid = true;
     }
 }

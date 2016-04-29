@@ -3,6 +3,8 @@ import jdk.internal.org.objectweb.asm.*;
 import java.io.IOException;
 
 public class Lool {
+    public static int lol = 50;
+
     public static void main(String[] args) throws IOException {
         new ClassReader("Clazz")
                 .accept(new Listener(), 0);

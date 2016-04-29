@@ -2,7 +2,7 @@ package util.noop;
 
 import org.objectweb.asm.Opcodes;
 import util.Cache;
-import util.Frame;
+import util.frame.Frame;
 import util.ref.consts.NullConst;
 
 class ConstInst {

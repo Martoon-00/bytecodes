@@ -2,10 +2,10 @@ package util.noop;
 
 import org.objectweb.asm.Opcodes;
 import util.Cache;
-import util.Frame;
 import util.RefType;
 import util.effect.EffectsCollector;
 import util.except.UnsupportedOpcodeException;
+import util.frame.Frame;
 import util.ref.Arbitrary;
 
 public class NoOpInst {
@@ -33,6 +33,17 @@ public class NoOpInst {
         stackModInst = new StackModInst(frame);
     }
 
+    // 0                : nop
+    // 1 - 15           : constants
+    // 46 - 53, 79 - 86 : arrays load and store
+    // 87 - 95          : stack manipulation
+    // 96 - 131         : number operations
+    // 136 - 147        : casts
+    // 148 - 150        : comparisons
+    // 172 - 177        : returns
+    // 190              : array length
+    // 191              : throw
+    // 194, 195         : monitors
     public void apply(int opcode) {
         switch (opcode) {
             case Opcodes.NOP:
@@ -164,8 +175,9 @@ public class NoOpInst {
             case Opcodes.FRETURN:
             case Opcodes.DRETURN:
             case Opcodes.ARETURN:
-            case Opcodes.RETURN:
                 effects.addReturnValue(frame.popStack());
+            case Opcodes.RETURN:
+                frame.setInVacuum();
                 break;
 
             // array length

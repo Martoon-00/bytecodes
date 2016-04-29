@@ -2,14 +2,14 @@ package util.noop;
 
 import org.objectweb.asm.Opcodes;
 import util.Cache;
-import util.Frame;
+import util.frame.Frame;
 import util.RefType;
 import util.except.UnsupportedOpcodeException;
 import util.op.BinOp;
 import util.ref.BinOpRef;
 import util.ref.Ref;
 
-public class CmpInst {
+class CmpInst {
     private final Cache cache;
     private final Frame frame;
 

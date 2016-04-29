@@ -1,16 +1,17 @@
 package util.noop;
 
+
 import org.objectweb.asm.Opcodes;
 import util.Cache;
-import util.Frame;
 import util.RefType;
+import util.frame.Frame;
 import util.op.BinOp;
 import util.op.UnaryOp;
 import util.ref.BinOpRef;
 import util.ref.Ref;
 import util.ref.UnaryOpRef;
 
-public class NumOpInst {
+class NumOpInst {
     private final Cache cache;
     private final Frame frame;
 
@@ -83,16 +84,16 @@ public class NumOpInst {
                 break;
 
             case Opcodes.INEG:
-                applyUnaryOp(a -> cache.get((int) a), RefType.INT);
+                applyUnaryOp(a -> cache.get(-(int) a), RefType.INT);
                 break;
             case Opcodes.LNEG:
-                applyUnaryOp(a -> cache.get((long) a), RefType.LONG);
+                applyUnaryOp(a -> cache.get(-(long) a), RefType.LONG);
                 break;
             case Opcodes.FNEG:
-                applyUnaryOp(a -> cache.get((float) a) , RefType.FLOAT);
+                applyUnaryOp(a -> cache.get(-(float) a) , RefType.FLOAT);
                 break;
             case Opcodes.DNEG:
-                applyUnaryOp(a -> cache.get((double) a) , RefType.DOUBLE);
+                applyUnaryOp(a -> cache.get(-(double) a) , RefType.DOUBLE);
                 break;
 
             case Opcodes.ISHL:

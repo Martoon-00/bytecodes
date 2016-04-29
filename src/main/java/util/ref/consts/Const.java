@@ -15,4 +15,9 @@ public class Const extends EvalRef {
     public Object value() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        return "Const{" + value + '}';
+    }
 }

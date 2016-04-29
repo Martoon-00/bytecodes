@@ -1,6 +1,8 @@
 package util;
 
 
+import org.objectweb.asm.Type;
+
 public enum RefType {
     BOOLEAN(false),
     BYTE(false),
@@ -24,5 +26,28 @@ public enum RefType {
 
     public boolean hasDoubleSize() {
         return dsize;
+    }
+
+    public static RefType fromAsmType(Type type) {
+        switch (type.toString()) {
+            case "Z":
+                return BOOLEAN;
+            case "B":
+                return BYTE;
+            case "S":
+                return SHORT;
+            case "C":
+                return CHAR;
+            case "I":
+                return INT;
+            case "L":
+                return LONG;
+            case "F":
+                return FLOAT;
+            case "D":
+                return DOUBLE;
+            default:
+                return OBJECTREF;
+        }
     }
 }
