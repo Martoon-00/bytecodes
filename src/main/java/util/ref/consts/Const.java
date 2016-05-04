@@ -1,9 +1,9 @@
 package util.ref.consts;
 
 import util.RefType;
-import util.ref.EvalRef;
+import util.ref.FinalRef;
 
-public class Const extends EvalRef {
+public class Const extends FinalRef {
     private final Object value;
 
     public Const(Object value, RefType type) {
@@ -12,12 +12,7 @@ public class Const extends EvalRef {
     }
 
     @Override
-    public Object value() {
-        return value;
-    }
-
-    @Override
-    public String toString() {
-        return "Const{" + value + '}';
+    protected String show() {
+        return "Const{ " + value + " }";
     }
 }

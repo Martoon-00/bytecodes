@@ -1,23 +1,27 @@
 package util.ref;
 
 import util.RefType;
-import util.op.BinOp;
+import util.op.BinOpType;
 
 public class BinOpRef extends Ref {
-    private final BinOp op;
+    private final BinOpType opType;
     private final Ref a;
     private final Ref b;
 
-    private BinOpRef(BinOp op, Ref a, Ref b, RefType type) {
+    public BinOpRef(BinOpType opType, Ref a, Ref b, RefType type) {
         super(type);
-        this.op = op;
+        this.opType = opType;
         this.a = a;
         this.b = b;
     }
 
-    public static BinOpRef of(BinOp op, Ref a, Ref b, RefType type) {
+    public static BinOpRef of(BinOpType opType, Ref a, Ref b, RefType type) {
         // TODO: shortcut
-        return new BinOpRef(op, a, b, type);
+        return new BinOpRef(opType, a, b, type);
     }
 
+    @Override
+    protected String show() {
+        return String.format("BinOp{ %s, %s }", a, b);
+    }
 }

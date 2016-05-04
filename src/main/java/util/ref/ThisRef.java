@@ -10,4 +10,13 @@ public class ThisRef extends FinalRef {
     public static ThisRef val() {
         return new ThisRef();
     }
+
+    @Override
+    protected String show() {
+        return "<this>";
+    }
+
+    public static class ThisVal implements SpecValue {
+        private static final ThisRef val = new ThisRef();
+    }
 }

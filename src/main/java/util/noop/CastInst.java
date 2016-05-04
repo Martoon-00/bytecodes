@@ -42,13 +42,13 @@ class CastInst {
                 applyUnaryOp(a -> cache.get((double) a), RefType.DOUBLE);
                 break;
             case Opcodes.I2B:
-                applyUnaryOp(a -> cache.get((byte) a), RefType.BYTE);
+                applyUnaryOp(a -> cache.get((int) (byte) a), RefType.INT);
                 break;
             case Opcodes.I2C:
-                applyUnaryOp(a -> cache.get((int)(char) a), RefType.CHAR);
+                applyUnaryOp(a -> cache.get((int) (char) a), RefType.INT);
                 break;
             case Opcodes.I2S:
-                applyUnaryOp(a -> cache.get((short) a), RefType.SHORT);
+                applyUnaryOp(a -> cache.get((int) (short) a), RefType.INT);
                 break;
             default:
                 throw new UnsupportedOpcodeException(opcode);

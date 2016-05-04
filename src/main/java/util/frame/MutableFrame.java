@@ -35,7 +35,7 @@ public class MutableFrame implements Frame {
 
     public Ref popStack() {
         if (inVacuum)
-            return new NoRef("Acquired reference from dead code");
+            return NoRef.of("Acquired reference from dead code");
 
         int size = stack.size();
         List<Ref> last = stack.subList(size - 1, size);
@@ -56,7 +56,7 @@ public class MutableFrame implements Frame {
 
     public Ref getLocal(int i) {
         if (inVacuum)
-            return new NoRef("Acquired reference from dead code");
+            return NoRef.of("Acquired reference from dead code");
 
         return local.get(i);
     }
@@ -85,7 +85,7 @@ public class MutableFrame implements Frame {
 
     private void ensureLocalSize(int n) {
         while (local.size() <= n) {
-            local.add(new NoRef(String.format("Undefined value as %d local value in %s method", local.size() - 1, method)));
+            local.add(NoRef.of(String.format("Undefined value as %d local value in %s method", local.size() - 1, method)));
         }
     }
 
@@ -106,9 +106,7 @@ public class MutableFrame implements Frame {
         if (o.isInVacuum())
             return;
         if (isInVacuum()) {
-            stack = other.stack;
-            local = other.local;
-            inVacuum = false;
+            replaceContent(other);
             return;
         }
 
@@ -124,8 +122,55 @@ public class MutableFrame implements Frame {
         for (int i = 0; i < n; i++) {
             local.set(i, PackRef.ofTwo(local.get(i), other.local.get(i)));
         }
-        for (int i = n; i < other.stack.size(); i++) {
-            stack.add(other.stack.get(i));
+        for (int i = n; i < other.local.size(); i++) {
+            local.add(other.local.get(i));
         }
+    }
+
+    // this is current frame, other is back frame
+    @Override
+    public void invalidatingMerge(Frame o) {
+        if (isInVacuum())
+            return;
+
+        if (o.isInVacuum())
+            throw new IllegalStateException("Cases of back-jump to label after unconditional jump are not proceed");
+
+        if (!(o instanceof MutableFrame))
+            throw new IllegalArgumentException("Merge of frames with different types");
+        MutableFrame other = (MutableFrame) o;
+
+        // stack
+        if (stack.size() != other.stack.size())
+            throw new InvalidBytecodeException("Stacks have different sizes");
+
+        for (int i = 0; i < stack.size(); i++) {
+            invalidateIfNotEqual(stack.get(i), other.stack.get(i));
+        }
+
+        // locals
+        int n = Math.min(local.size(), other.local.size());
+        for (int i = 0; i < n; i++) {
+            invalidateIfNotEqual(local.get(i), other.local.get(i));
+        }
+        for (int i = n; i < local.size(); i++) {
+            local.get(i).invalidate();
+        }
+        for (int i = n; i < other.local.size(); i++) {
+            other.local.get(i).invalidate();
+        }
+    }
+
+    private void invalidateIfNotEqual(Ref a, Ref b) {
+        if (a != b) {
+            a.invalidate();
+            b.invalidate();
+        }
+    }
+
+    private void replaceContent(MutableFrame other) {
+        stack = other.stack;
+        local = other.local;
+        inVacuum = false;
     }
 }

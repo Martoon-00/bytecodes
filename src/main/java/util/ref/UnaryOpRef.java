@@ -1,21 +1,25 @@
 package util.ref;
 
 import util.RefType;
-import util.op.UnaryOp;
+import util.op.UnaryOpType;
 
 public class UnaryOpRef extends Ref {
-    private final UnaryOp op;
+    private final UnaryOpType opType;
     private final Ref a;
 
-    private UnaryOpRef(UnaryOp op, Ref a, RefType type) {
+    private UnaryOpRef(UnaryOpType opType, Ref a, RefType type) {
         super(type);
-        this.op = op;
+        this.opType = opType;
         this.a = a;
     }
 
-    public static UnaryOpRef of(UnaryOp op, Ref a, RefType type) {
+    public static UnaryOpRef of(UnaryOpType opType, Ref a, RefType type) {
         // TODO: shortcut if possible
-        return new UnaryOpRef(op, a, type);
+        return new UnaryOpRef(opType, a, type);
     }
 
+    @Override
+    protected String show() {
+        return String.format("UnaryOp{ %s }", a);
+    }
 }

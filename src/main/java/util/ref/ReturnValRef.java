@@ -14,4 +14,9 @@ public class ReturnValRef extends Ref {
         this.method = method;
         this.params = params;
     }
+
+    @Override
+    protected String show() {
+        return String.format("ReturnVal(%s){ %s }", method, params);
+    }
 }

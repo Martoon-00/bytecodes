@@ -177,6 +177,7 @@ public class NoOpInst {
             case Opcodes.ARETURN:
                 effects.addReturnValue(frame.popStack());
             case Opcodes.RETURN:
+//                effects.addReturnValue(NoRef.of("Access to return value of void method"));
                 frame.setInVacuum();
                 break;
 

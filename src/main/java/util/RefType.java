@@ -4,10 +4,6 @@ package util;
 import org.objectweb.asm.Type;
 
 public enum RefType {
-    BOOLEAN(false),
-    BYTE(false),
-    SHORT(false),
-    CHAR(false),
     INT(false),
     LONG(true),
     FLOAT(false),
@@ -31,13 +27,9 @@ public enum RefType {
     public static RefType fromAsmType(Type type) {
         switch (type.toString()) {
             case "Z":
-                return BOOLEAN;
             case "B":
-                return BYTE;
             case "S":
-                return SHORT;
             case "C":
-                return CHAR;
             case "I":
                 return INT;
             case "L":

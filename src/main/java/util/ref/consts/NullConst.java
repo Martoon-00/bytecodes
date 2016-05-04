@@ -1,9 +1,9 @@
 package util.ref.consts;
 
 import util.RefType;
-import util.ref.EvalRef;
+import util.ref.Ref;
 
-public class NullConst extends EvalRef {
+public class NullConst extends Ref {
     private NullConst() {
         super(RefType.OBJECTREF);
     }
@@ -13,8 +13,7 @@ public class NullConst extends EvalRef {
     }
 
     @Override
-    public Object value() {
-        return NullObj.val();
+    protected String show() {
+        return "<null>";
     }
-
 }

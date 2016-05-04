@@ -1,6 +1,6 @@
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.analysis.*;
+import util.Cache;
 import util.MethodRef;
 import util.RefType;
 import util.ref.MethodParamRef;
@@ -9,11 +9,16 @@ import util.ref.ThisRef;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ClassScanner extends ClassVisitor {
+    private final Cache cache = new Cache();
+
     private final String clazz;
 
     public static MethodNode methodNode;
+
+    private final List<MethodScanner> methodScanners = new ArrayList<>();
 
     public ClassScanner(String clazz) {
         super(Opcodes.ASM4);
@@ -23,17 +28,26 @@ public class ClassScanner extends ClassVisitor {
 
     public static void main(String[] args) throws IOException {
         String clazz = "Clazz";
+        ClassScanner cn = new ClassScanner(clazz);
         new ClassReader(clazz)
-                .accept(new ClassScanner(clazz), 0);
+                .accept(cn, 0);
 
-        Analyzer<BasicValue> a = new Analyzer<>(new LolInterpreter());
-        try {
-            a.analyze(clazz, methodNode);
-            Frame<BasicValue>[] frames = a.getFrames();
-            int k = 5;
-        } catch (AnalyzerException e) {
-            e.printStackTrace();
+        for (MethodScanner methodScanner : cn.methodScanners) {
+            System.out.println("Analysis result for " + methodScanner.getMethod());
+            methodScanner.getEffects()
+                    .print();
+            System.out.println();
+            System.out.println();
         }
+
+//        Analyzer<BasicValue> a = new Analyzer<>(new LolInterpreter());
+//        try {
+//            a.analyze(clazz, methodNode);
+//            Frame<BasicValue>[] frames = a.getFrames();
+//            int k = 5;
+//        } catch (AnalyzerException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public MethodVisitor visitMethod0(int access, String name, String desc, String signature, String[] exceptions) {
@@ -55,6 +69,8 @@ public class ClassScanner extends ClassVisitor {
             params.add(new MethodParamRef(methodRef, i, RefType.fromAsmType(argType)));
         }
 
-        return new MethodScanner(methodRef, params);
+        MethodScanner methodScanner = new MethodScanner(methodRef, params, cache);
+        methodScanners.add(methodScanner);
+        return methodScanner;
     }
 }

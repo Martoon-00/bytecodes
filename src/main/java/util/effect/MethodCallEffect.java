@@ -14,5 +14,16 @@ public class MethodCallEffect implements Effect {
         this.params = params;
     }
 
+    @Override
+    public String toString() {
+        return "MethodCallEffect{ " +  method +"( " + params + " ) } ";
+    }
 
+    public MethodRef getMethod() {
+        return method;
+    }
+
+    public List<Ref> getParams() {
+        return params;
+    }
 }

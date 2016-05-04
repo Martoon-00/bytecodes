@@ -15,4 +15,9 @@ public class FieldAssignEffect implements Effect {
     public static FieldAssignEffect of(FieldRef field, Ref value) {
         return new FieldAssignEffect(field, value);
     }
+
+    @Override
+    public String toString() {
+        return "FieldAssignEffect{ " + field + " <- " + value + " }";
+    }
 }

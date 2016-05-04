@@ -2,27 +2,36 @@ package util.ref.consts;
 
 import util.RefType;
 import util.except.UndefinedValueException;
-import util.ref.EvalRef;
+import util.ref.Ref;
 
-public class NoRef extends EvalRef {
+public class NoRef extends Ref {
     private final String msg;
 
     public NoRef() {
         this(null);
     }
 
-    public NoRef(String errorMsgOnAccess) {
+    private NoRef(String msg) {
         super(null);
-        this.msg = errorMsgOnAccess;
+        this.msg = msg;
     }
 
-    @Override
-    public Object value() {
-        throw new UndefinedValueException(msg);
+    public static Ref of(String errorMsgOnAccess) {
+        return new NoRef(errorMsgOnAccess);
     }
 
     @Override
     public RefType getType() {
         throw new UndefinedValueException(msg);
+    }
+
+    @Override
+    public void invalidate() {
+        throw new UndefinedValueException(msg);
+    }
+
+    @Override
+    protected String show() {
+        return "<No ref>";
     }
 }

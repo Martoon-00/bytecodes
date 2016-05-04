@@ -17,4 +17,12 @@ public abstract class Ref {
     public void invalidate() {
         invalid = true;
     }
+
+    protected abstract String show();
+
+    @Override
+    public final String toString() {
+        return invalid ? Arbitrary.val(type).toString()
+                : show();
+    }
 }

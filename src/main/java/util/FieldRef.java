@@ -1,6 +1,7 @@
 package util;
 
 import util.ref.Ref;
+import util.ref.SpecValue;
 
 public class FieldRef extends Ref {
     private final String clazz;
@@ -20,4 +21,16 @@ public class FieldRef extends Ref {
         return name;
     }
 
+    @Override
+    public String show() {
+        return "FieldRef{ " + clazz + '#' + name + " }";
+    }
+
+    public static class FieldVal implements SpecValue {
+        private final Ref ref;
+
+        public FieldVal(Ref ref) {
+            this.ref = ref;
+        }
+    }
 }

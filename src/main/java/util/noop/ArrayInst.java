@@ -24,6 +24,9 @@ class ArrayInst {
             // load from array instruction
             RefType type;
             switch (opcode) {
+                case Opcodes.BALOAD:
+                case Opcodes.CALOAD:
+                case Opcodes.SALOAD:
                 case Opcodes.IALOAD:
                     type = RefType.INT;
                     break;
@@ -38,15 +41,6 @@ class ArrayInst {
                     break;
                 case Opcodes.AALOAD:
                     type = RefType.OBJECTREF;
-                    break;
-                case Opcodes.BALOAD:
-                    type = RefType.BOOLEAN;
-                    break;
-                case Opcodes.CALOAD:
-                    type = RefType.CHAR;
-                    break;
-                case Opcodes.SALOAD:
-                    type = RefType.SHORT;
                     break;
                 default:
                     throw new UnsupportedOpcodeException(opcode);

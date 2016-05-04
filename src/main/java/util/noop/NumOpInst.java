@@ -1,17 +1,25 @@
 package util.noop;
 
 
-import org.objectweb.asm.Opcodes;
 import util.Cache;
 import util.RefType;
+import util.except.UnsupportedOpcodeException;
 import util.frame.Frame;
-import util.op.BinOp;
-import util.op.UnaryOp;
+import util.op.BinOpType;
+import util.op.UnaryOpType;
 import util.ref.BinOpRef;
 import util.ref.Ref;
 import util.ref.UnaryOpRef;
 
 class NumOpInst {
+    private static final RefType[] types = {RefType.INT, RefType.LONG};
+    private static final RefType[] typesExt = {RefType.INT, RefType.LONG, RefType.FLOAT, RefType.DOUBLE};
+    private static final BinOpType[] arithmeticTypes = {BinOpType.ADD, BinOpType.SUB, BinOpType.MUL, BinOpType.DIV,
+            BinOpType.REM};
+    private static final BinOpType[] shiftTypes = {BinOpType.SHIFT_LEFT, BinOpType.SHIFT_RIGHT_ARITHMETIC,
+            BinOpType.SHIFT_RIGHT_LOGIC};
+    private static final BinOpType[] logicTypes = {BinOpType.AND, BinOpType.OR, BinOpType.XOR};
+
     private final Cache cache;
     private final Frame frame;
 
@@ -21,6 +29,27 @@ class NumOpInst {
     }
 
     public void apply(int opcode) {
+        //  96 - 115:  (+, -, *, /, %) x (int, long, float, double)
+        // 116 - 119:  (unary -)       x (int, long, float, double)
+        // 120 - 125:  (<<, >>, >>>)   x (int, long)
+        // 126 - 131:  (&, |, ^)       x (int, long)
+        if (opcode >= 132) {
+            throw new UnsupportedOpcodeException(opcode);
+        } else if (opcode >= 126) {
+            int o = opcode - 126;
+            applyBinOp(logicTypes[o / 2], types[o % 2]);
+        } else if (opcode >= 120) {
+            int o = opcode - 120;
+            applyBinOp(shiftTypes[o / 2], types[o % 2]);
+        } else if (opcode >= 116) {
+            int o = opcode - 116;
+            applyUnaryOp(UnaryOpType.NEG, typesExt[o]);
+        } else if (opcode >= 96) {
+            int o = opcode - 96;
+            applyBinOp(arithmeticTypes[o / 4], types[o % 4]);
+        }
+
+        /*
         switch (opcode) {
             case Opcodes.IADD:
                 applyBinOp((a, b) -> cache.get((int) a + (int) b), RefType.INT);
@@ -90,10 +119,10 @@ class NumOpInst {
                 applyUnaryOp(a -> cache.get(-(long) a), RefType.LONG);
                 break;
             case Opcodes.FNEG:
-                applyUnaryOp(a -> cache.get(-(float) a) , RefType.FLOAT);
+                applyUnaryOp(a -> cache.get(-(float) a), RefType.FLOAT);
                 break;
             case Opcodes.DNEG:
-                applyUnaryOp(a -> cache.get(-(double) a) , RefType.DOUBLE);
+                applyUnaryOp(a -> cache.get(-(double) a), RefType.DOUBLE);
                 break;
 
             case Opcodes.ISHL:
@@ -134,19 +163,19 @@ class NumOpInst {
                 applyBinOp((a, b) -> cache.get((long) a ^ (long) b), RefType.LONG);
                 break;
         }
+        */
     }
 
-
-    private void applyBinOp(BinOp op, RefType type) {
+    private void applyBinOp(BinOpType opType, RefType valType) {
         Ref a = frame.popStack();
         Ref b = frame.popStack();
-        BinOpRef ref = BinOpRef.of(op, a, b, type);
+        BinOpRef ref = BinOpRef.of(opType, a, b, valType);
         frame.pushStack(ref);
     }
 
-    private void applyUnaryOp(UnaryOp op, RefType type) {
+    private void applyUnaryOp(UnaryOpType opType, RefType type) {
         Ref a = frame.popStack();
-        UnaryOpRef ref = UnaryOpRef.of(op, a, type);
+        UnaryOpRef ref = UnaryOpRef.of(opType, a, type);
         frame.pushStack(ref);
     }
 }

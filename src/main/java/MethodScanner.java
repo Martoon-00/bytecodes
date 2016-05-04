@@ -4,6 +4,7 @@ import util.FieldRef;
 import util.MethodRef;
 import util.RefType;
 import util.effect.EffectsCollector;
+import util.effect.EffectsView;
 import util.effect.FieldAssignEffect;
 import util.effect.MethodCallEffect;
 import util.except.UnknownConstSort;
@@ -20,19 +21,22 @@ import util.ref.UnaryOpRef;
 import java.util.*;
 
 public class MethodScanner extends MethodVisitor {
-    private final Cache cache = new Cache();
+    private final MethodRef method;
+    private final Cache cache;
     private final Frame frame;
     private final EffectsCollector effects = new EffectsCollector();
 
-    private final Set<Label> visitedLabels = new HashSet<>();
+    private final Map<Label, Frame> visitedLabels = new HashMap<>();
     private final Map<Label, Frame> expectedLabels = new HashMap<>();
 
     private final NoOpInst noOpInst;
 
-    public MethodScanner(MethodRef method, List<Ref> params) {
+    public MethodScanner(MethodRef method, List<Ref> params, Cache cache) {
         super(Opcodes.ASM4);
-        frame = new MutableFrame(method, params);
-        noOpInst = new NoOpInst(cache, frame, effects);
+        this.method = method;
+        this.cache = cache;
+        this.frame = new MutableFrame(method, params);
+        this.noOpInst = new NoOpInst(cache, frame, effects);
     }
 
     @Override
@@ -43,11 +47,6 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitCode() {
         super.visitCode();
-    }
-
-    @Override
-    public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
-        super.visitFrame(type, nLocal, local, nStack, stack);
     }
 
     @Override
@@ -109,7 +108,7 @@ public class MethodScanner extends MethodVisitor {
             case Opcodes.CHECKCAST:
                 break;
             case Opcodes.INSTANCEOF:
-                frame.pushStack(Arbitrary.val(RefType.BOOLEAN));
+                frame.pushStack(Arbitrary.val(RefType.INT));
                 break;
             default:
                 throw new UnsupportedOpcodeException(opcode);
@@ -128,10 +127,11 @@ public class MethodScanner extends MethodVisitor {
                 frame.pushStack(field);
                 break;
             case Opcodes.PUTFIELD:
+                effects.addFieldAssign(FieldAssignEffect.of(field, frame.popStack()));
                 frame.popStack();
+                break;
             case Opcodes.PUTSTATIC:
-                FieldAssignEffect assign = FieldAssignEffect.of(field, frame.popStack());
-                effects.addFieldAssign(assign);
+                effects.addFieldAssign(FieldAssignEffect.of(field, frame.popStack()));
                 break;
         }
     }
@@ -215,7 +215,7 @@ public class MethodScanner extends MethodVisitor {
 
     @Override
     public void visitLabel(Label label) {
-        visitedLabels.add(label);
+        visitedLabels.put(label, frame.copy());
 
         Frame expectedFrame = expectedLabels.remove(label);
         if (expectedFrame != null) {
@@ -258,19 +258,19 @@ public class MethodScanner extends MethodVisitor {
                 throw new UnsupportedOpcodeException(opcode);
         }
 
-        if (!visitedLabels.contains(label)) {
+        Frame visitedFrame = visitedLabels.get(label);
+        if (visitedFrame == null) {
             Frame expectedFrame = expectedLabels.get(label);
-            Frame addedFrame;
             if (expectedFrame != null) {
-                expectedFrame.merge(frame);
-                addedFrame = frame;
+                expectedFrame.merge(this.frame);
             } else {
-                addedFrame = frame.copy();
+                expectedLabels.put(label, this.frame.copy());
             }
-            expectedLabels.put(label, addedFrame);
+        } else {
+            this.frame.invalidatingMerge(visitedFrame);
         }
         if (!conditional) {
-            frame.setInVacuum();
+            this.frame.setInVacuum();
         }
 
 //        Frame otherBranchFrame = expectedLabels.get(label);
@@ -284,4 +284,11 @@ public class MethodScanner extends MethodVisitor {
         super.visitEnd();
     }
 
+    public EffectsView getEffects() {
+        return effects.build();
+    }
+
+    public MethodRef getMethod() {
+        return method;
+    }
 }

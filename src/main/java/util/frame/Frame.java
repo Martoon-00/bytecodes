@@ -17,6 +17,8 @@ public interface Frame {
 
     void merge(Frame other);
 
+    void invalidatingMerge(Frame other);
+
     boolean isInVacuum();
 
     void setInVacuum();

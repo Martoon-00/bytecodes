@@ -5,18 +5,6 @@ import util.ref.consts.Const;
 import static util.RefType.OBJECTREF;
 
 public class Cache {
-    public Byte get(Byte k) {
-        return k;
-    }
-
-    public Short get(Short k) {
-        return k;
-    }
-
-    public Character get(Character k) {
-        return k;
-    }
-
     public Integer get(Integer k) {
         return k;
     }
@@ -35,14 +23,6 @@ public class Cache {
 
     public String get(String k) {
         return k;
-    }
-
-    public Const constOf(byte k) {
-        return new Const(get(k), RefType.BYTE);
-    }
-
-    public Const constOf(short k) {
-        return new Const(get(k), RefType.SHORT);
     }
 
     public Const constOf(int k) {
@@ -68,13 +48,6 @@ public class Cache {
 
     public Object get(Object v, RefType type) {
         switch (type) {
-            case BYTE:
-                return get((byte) v);
-            case SHORT:
-                return get((short) v);
-            case CHAR:
-                return get((char) v);
-            case BOOLEAN:
             case INT:
                 return get((int) v);
             case LONG:
