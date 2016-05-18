@@ -1,11 +1,12 @@
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.MethodNode;
-import util.Cache;
-import util.MethodRef;
-import util.RefType;
-import util.ref.MethodParamRef;
-import util.ref.Ref;
-import util.ref.ThisRef;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import scan.Cache;
+import scan.MethodRef;
+import scan.RefType;
+import scan.ref.MethodParamRef;
+import scan.ref.Ref;
+import scan.ref.ThisRef;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class ClassScanner extends ClassVisitor {
 
     private final String clazz;
 
-    public static MethodNode methodNode;
+    public static List<MethodNode> methodNodes = new ArrayList<>();
 
     private final List<MethodScanner> methodScanners = new ArrayList<>();
 
@@ -26,11 +27,16 @@ public class ClassScanner extends ClassVisitor {
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, AnalyzerException {
         String clazz = "Clazz";
         ClassScanner cn = new ClassScanner(clazz);
         new ClassReader(clazz)
                 .accept(cn, 0);
+
+//        EffectsOverallKeeper effects = new EffectsOverallKeeper();
+//        cn.methodScanners.forEach(scanner -> effects.addEffects(scanner.getMethod(), scanner.getEffects()));
+//
+//        effects.print(System.out);
 
         for (MethodScanner methodScanner : cn.methodScanners) {
             System.out.println("Analysis result for " + methodScanner.getMethod());
@@ -40,23 +46,22 @@ public class ClassScanner extends ClassVisitor {
             System.out.println();
         }
 
-//        Analyzer<BasicValue> a = new Analyzer<>(new LolInterpreter());
-//        try {
-//            a.analyze(clazz, methodNode);
-//            Frame<BasicValue>[] frames = a.getFrames();
-//            int k = 5;
-//        } catch (AnalyzerException e) {
-//            e.printStackTrace();
+
+//        for (MethodNode methodNode : methodNodes) {
+//            ControlFlow cf = new ControlFlow();
+//            Frame<BasicValue>[] result = cf.analyze(clazz, methodNode);
 //        }
     }
 
     public MethodVisitor visitMethod0(int access, String name, String desc, String signature, String[] exceptions) {
-        return methodNode = new MethodNode(Opcodes.ASM4, access, name, desc, signature, exceptions);
+        MethodNode methodNode = new MethodNode(Opcodes.ASM4, access, name, desc, signature, exceptions);
+        methodNodes.add(methodNode);
+        return methodNode;
     }
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodRef methodRef = MethodRef.of(clazz, name);
+        MethodRef methodRef = MethodRef.of(clazz, name, desc);
 
         ArrayList<Ref> params = new ArrayList<>();
         if ((access & Opcodes.ACC_STATIC) == 0)

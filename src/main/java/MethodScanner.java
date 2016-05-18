@@ -1,22 +1,22 @@
 import org.objectweb.asm.*;
-import util.Cache;
-import util.FieldRef;
-import util.MethodRef;
-import util.RefType;
-import util.effect.EffectsCollector;
-import util.effect.EffectsView;
-import util.effect.FieldAssignEffect;
-import util.effect.MethodCallEffect;
-import util.except.UnknownConstSort;
-import util.except.UnknownConstType;
-import util.except.UnsupportedOpcodeException;
-import util.frame.Frame;
-import util.frame.MutableFrame;
-import util.noop.NoOpInst;
-import util.ref.Arbitrary;
-import util.ref.Ref;
-import util.ref.ReturnValRef;
-import util.ref.UnaryOpRef;
+import scan.Cache;
+import scan.FieldRef;
+import scan.MethodRef;
+import scan.RefType;
+import scan.effect.EffectsCollector;
+import scan.effect.EffectsView;
+import scan.effect.FieldAssignEffect;
+import scan.effect.MethodCallEffect;
+import scan.except.UnknownConstSort;
+import scan.except.UnknownConstType;
+import scan.except.UnsupportedOpcodeException;
+import scan.frame.Frame;
+import scan.frame.MutableFrame;
+import scan.noop.NoOpInst;
+import scan.ref.Arbitrary;
+import scan.ref.Ref;
+import scan.ref.ReturnValRef;
+import scan.ref.op.BinOpRef;
 
 import java.util.*;
 
@@ -24,7 +24,7 @@ public class MethodScanner extends MethodVisitor {
     private final MethodRef method;
     private final Cache cache;
     private final Frame frame;
-    private final EffectsCollector effects = new EffectsCollector();
+    private final EffectsCollector effects;
 
     private final Map<Label, Frame> visitedLabels = new HashMap<>();
     private final Map<Label, Frame> expectedLabels = new HashMap<>();
@@ -32,30 +32,23 @@ public class MethodScanner extends MethodVisitor {
     private final NoOpInst noOpInst;
 
     public MethodScanner(MethodRef method, List<Ref> params, Cache cache) {
-        super(Opcodes.ASM4);
+        super(Opcodes.ASM4, new ContextScanner());
         this.method = method;
         this.cache = cache;
         this.frame = new MutableFrame(method, params);
+        this.effects = new EffectsCollector(method);
         this.noOpInst = new NoOpInst(cache, frame, effects);
     }
 
     @Override
-    public void visitAttribute(Attribute attr) {
-        super.visitAttribute(attr);
-    }
-
-    @Override
-    public void visitCode() {
-        super.visitCode();
-    }
-
-    @Override
     public void visitInsn(int opcode) {
+        super.visitInsn(opcode);
         noOpInst.apply(opcode);
     }
 
     @Override
     public void visitIntInsn(int opcode, int operand) {
+        super.visitIntInsn(opcode, operand);
         switch (opcode) {
             case Opcodes.BIPUSH:
                 frame.pushStack(cache.constOf((byte) operand));
@@ -73,6 +66,7 @@ public class MethodScanner extends MethodVisitor {
 
     @Override
     public void visitVarInsn(int opcode, int var) {
+        super.visitVarInsn(opcode, var);
         switch (opcode) {
             case Opcodes.ILOAD:
             case Opcodes.FLOAD:
@@ -98,6 +92,7 @@ public class MethodScanner extends MethodVisitor {
 
     @Override
     public void visitTypeInsn(int opcode, String type) {
+        super.visitTypeInsn(opcode, type);
         switch (opcode) {
             case Opcodes.NEW:
                 frame.pushStack(Arbitrary.val(RefType.OBJECTREF));
@@ -117,6 +112,7 @@ public class MethodScanner extends MethodVisitor {
 
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+        super.visitFieldInsn(opcode, owner, name, desc);
         RefType type = RefType.fromAsmType(Type.getType(desc));
         FieldRef field = FieldRef.of(owner, name, type);
 
@@ -127,24 +123,25 @@ public class MethodScanner extends MethodVisitor {
                 frame.pushStack(field);
                 break;
             case Opcodes.PUTFIELD:
-                effects.addFieldAssign(FieldAssignEffect.of(field, frame.popStack()));
+                effects.addFieldAssign(FieldAssignEffect.of(method, field, frame.popStack()));
                 frame.popStack();
                 break;
             case Opcodes.PUTSTATIC:
-                effects.addFieldAssign(FieldAssignEffect.of(field, frame.popStack()));
+                effects.addFieldAssign(FieldAssignEffect.of(method, field, frame.popStack()));
                 break;
         }
     }
 
     @Override
     public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
-        // TODO
         super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
+        // TODO
     }
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-        MethodRef method = MethodRef.of(owner, name);
+        super.visitMethodInsn(opcode, owner, name, desc);
+        MethodRef method = MethodRef.of(owner, name, desc);
         ArrayList<Ref> params = new ArrayList<>();
         Type methodType = Type.getMethodType(desc);
 
@@ -161,12 +158,13 @@ public class MethodScanner extends MethodVisitor {
             frame.pushStack(ret);
         }
 
-        MethodCallEffect effect = new MethodCallEffect(method, params);
+        MethodCallEffect effect = new MethodCallEffect(method, method, params);
         effects.addMethodCall(effect);
     }
 
     @Override
     public void visitLdcInsn(Object cst) {
+        super.visitLdcInsn(cst);
         if (cst instanceof Integer) {
             frame.pushStack(cache.constOf((int) cst));
         } else if (cst instanceof Float) {
@@ -198,13 +196,15 @@ public class MethodScanner extends MethodVisitor {
 
     @Override
     public void visitIincInsn(int index, int delta) {
+        super.visitIincInsn(index, delta);
         Ref oldVal = frame.getLocal(index);
-        UnaryOpRef newVal = UnaryOpRef.of(a -> (int) a + delta, oldVal, RefType.INT);
+        Ref newVal = BinOpRef.of(Opcodes.IADD, oldVal, cache.constOf(delta));
         frame.setLocal(index, newVal);
     }
 
     @Override
     public void visitMultiANewArrayInsn(String desc, int dims) {
+        super.visitMultiANewArrayInsn(desc, dims);
         frame.replaceStack(dims, Arbitrary.val(RefType.OBJECTREF));
     }
 
@@ -215,6 +215,7 @@ public class MethodScanner extends MethodVisitor {
 
     @Override
     public void visitLabel(Label label) {
+        super.visitLabel(label);
         visitedLabels.put(label, frame.copy());
 
         Frame expectedFrame = expectedLabels.remove(label);
@@ -225,6 +226,7 @@ public class MethodScanner extends MethodVisitor {
 
     @Override
     public void visitJumpInsn(int opcode, Label label) {
+        super.visitJumpInsn(opcode, label);
         boolean conditional;
         switch (opcode) {
             case Opcodes.IFEQ:
@@ -260,12 +262,7 @@ public class MethodScanner extends MethodVisitor {
 
         Frame visitedFrame = visitedLabels.get(label);
         if (visitedFrame == null) {
-            Frame expectedFrame = expectedLabels.get(label);
-            if (expectedFrame != null) {
-                expectedFrame.merge(this.frame);
-            } else {
-                expectedLabels.put(label, this.frame.copy());
-            }
+            addForwardBranch(label);
         } else {
             this.frame.invalidatingMerge(visitedFrame);
         }
@@ -280,8 +277,39 @@ public class MethodScanner extends MethodVisitor {
     }
 
     @Override
+    public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
+        super.visitTableSwitchInsn(min, max, dflt, labels);
+        frame.popStack();
+        for (Label label : labels) {
+            addForwardBranch(label);
+        }
+        addForwardBranch(dflt);
+        frame.setInVacuum();
+    }
+
+    @Override
+    public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
+        super.visitLookupSwitchInsn(dflt, keys, labels);
+        frame.popStack();
+        for (Label label : labels) {
+            addForwardBranch(label);
+        }
+        addForwardBranch(dflt);
+        frame.setInVacuum();
+    }
+
+    @Override
     public void visitEnd() {
         super.visitEnd();
+    }
+
+    private void addForwardBranch(Label label) {
+        Frame expectedFrame = expectedLabels.get(label);
+        if (expectedFrame != null) {
+            expectedFrame.merge(this.frame);
+        } else {
+            expectedLabels.put(label, this.frame.copy());
+        }
     }
 
     public EffectsView getEffects() {

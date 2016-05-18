@@ -1,19 +1,21 @@
 public class Clazz {
-    private int f;
 
-    public Clazz() {
-        int k = 5;
-        long j = 8;
-        System.out.println(k + j);
+    public Clazz(int[] array) {
+        int k = 1;
     }
 
-    private int a(int i) {
-        return 5;
-    }
-
-    //    public static void main(String[] args) {
-//        System.out.println(new Clazz().a());
+    //    int test() {
+//        int i = 0, j = 0;
+//        try {
+//            while (i < 100) {
+//                i = i + 1;
+//                j = j + array[i];
+//            }
+//        } catch (Exception e) {
+//            return 0;
+//        } finally {
+//            array = null;
+//        }
+//        return j;
 //    }
-//
-
 }

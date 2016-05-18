@@ -19,6 +19,38 @@ public class LolInterpreter extends BasicInterpreter {
 
     @Override
     public BasicValue newOperation(AbstractInsnNode insn) throws AnalyzerException {
+        switch (insn.getOpcode()) {
+            case Opcodes.ACONST_NULL:
+                return new LolValue(Type.getObjectType("java/lang/Object"), null);
+            case Opcodes.ICONST_M1:
+                return new LolValue(Type.INT_TYPE, -1);
+            case Opcodes.ICONST_0:
+                return new LolValue(Type.INT_TYPE, 0);
+            case Opcodes.ICONST_1:
+                return new LolValue(Type.INT_TYPE, 1);
+            case Opcodes.ICONST_2:
+                return new LolValue(Type.INT_TYPE, 2);
+            case Opcodes.ICONST_3:
+                return new LolValue(Type.INT_TYPE, 3);
+            case Opcodes.ICONST_4:
+                return new LolValue(Type.INT_TYPE, 4);
+            case Opcodes.ICONST_5:
+                return new LolValue(Type.INT_TYPE, 5);
+            case Opcodes.LCONST_0:
+                return new LolValue(Type.LONG_TYPE, 0);
+            case Opcodes.LCONST_1:
+                return new LolValue(Type.LONG_TYPE, 1);
+            case Opcodes.FCONST_0:
+                return new LolValue(Type.FLOAT_TYPE, 0);
+            case Opcodes.FCONST_1:
+                return new LolValue(Type.LONG_TYPE, 1);
+            case Opcodes.FCONST_2:
+                return new LolValue(Type.LONG_TYPE, 2);
+            case Opcodes.DCONST_0:
+                return new LolValue(Type.DOUBLE_TYPE, 0);
+            case Opcodes.DCONST_1:
+                return new LolValue(Type.DOUBLE_TYPE, 1);
+        }
         return super.newOperation(insn);
     }
 
@@ -56,4 +88,19 @@ public class LolInterpreter extends BasicInterpreter {
     public BasicValue merge(BasicValue v, BasicValue w) {
         return super.merge(v, w);
     }
+
+    private static class LolValue extends BasicValue {
+        private final Object value;
+
+        public LolValue(Type type, Object value) {
+            super(type);
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return "LolValue{ " + value + " }";
+        }
+    }
+
 }
