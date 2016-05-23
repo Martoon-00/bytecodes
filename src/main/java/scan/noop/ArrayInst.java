@@ -8,18 +8,20 @@ import scan.frame.Frame;
 import scan.ref.Arbitrary;
 
 import java.util.function.IntPredicate;
+import java.util.function.Supplier;
 
 class ArrayInst {
     private static final IntPredicate isloadInst = opcode -> opcode >= 46 && opcode <= 53;
     private static final IntPredicate isStoreInst = opcode -> opcode >= 79 && opcode <= 86;
 
-    private final Frame frame;
+    private final Supplier<Frame> curFrame;
 
-    public ArrayInst(Frame frame) {
-        this.frame = frame;
+    public ArrayInst(Supplier<Frame> curFrame) {
+        this.curFrame = curFrame;
     }
 
     public void apply(int opcode) {
+        Frame frame = this.curFrame.get();
         if (isloadInst.test(opcode)) {
             // load from array instruction
             RefType type;

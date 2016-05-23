@@ -1,17 +1,27 @@
+package scan.scanners;
+
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import scan.frame.Frame;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-public class ContextScanner extends MethodVisitor {
+public class ContextScanner<F extends Frame> extends MethodVisitor {
     private int instNum;
+    private final List<F> frames = new ArrayList<>();
+    private final Function<F, F> defaultNextFrame;
     private final Map<Label, Integer> labels = new HashMap<>();
 
-    public ContextScanner() {
+    public ContextScanner(F initialFrame, Function<F, F> defaultNextFrame) {
         super(Opcodes.ASM4);
+        frames.add(initialFrame);
+        this.defaultNextFrame = defaultNextFrame;
     }
 
     public int curInstIndex() {
@@ -19,7 +29,12 @@ public class ContextScanner extends MethodVisitor {
     }
 
     private void registerInst() {
+        frames.add(defaultNextFrame.apply(getCurFrame()));
         instNum++;
+    }
+
+    public F getCurFrame() {
+        return frames.get(instNum);
     }
 
     @Override

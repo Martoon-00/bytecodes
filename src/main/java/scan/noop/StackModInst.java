@@ -5,65 +5,68 @@ import scan.frame.Frame;
 import scan.except.IllegalStackManipulationException;
 import scan.ref.Ref;
 
-class StackModInst {
-    private final Frame frame;
+import java.util.function.Supplier;
 
-    public StackModInst(Frame frame) {
+class StackModInst {
+    private final Supplier<Frame> frame;
+
+    public StackModInst(Supplier<Frame> frame) {
         this.frame = frame;
     }
 
     public void apply(int opcode) {
+        Frame frame = this.frame.get();
         switch (opcode) {
             case Opcodes.POP:
-                pop();
+                pop(frame);
                 break;
             case Opcodes.POP2:
-                pop2();
+                pop2(frame);
                 break;
             case Opcodes.DUP:
-                dup();
+                dup(frame);
                 break;
             case Opcodes.DUP_X1:
-                dup_x1();
+                dup_x1(frame);
                 break;
             case Opcodes.DUP_X2:
-                dup_x2();
+                dup_x2(frame);
                 break;
             case Opcodes.DUP2:
-                dup2();
+                dup2(frame);
                 break;
             case Opcodes.DUP2_X1:
-                dup2_x1();
+                dup2_x1(frame);
                 break;
             case Opcodes.DUP2_X2:
-                dup2_x2();
+                dup2_x2(frame);
                 break;
             case Opcodes.SWAP:
-                swap();
+                swap(frame);
                 break;
         }
     }
 
-    private void dup() {
+    private void dup(Frame frame) {
         Ref val = frame.popStack();
         ensureCategory1(val);
         frame.pushStack(val);
         frame.pushStack(val);
     }
 
-    private void pop() {
+    private void pop(Frame frame) {
         Ref v = frame.popStack();
         ensureCategory1(v);
     }
 
-    private void pop2() {
+    private void pop2(Frame frame) {
         Ref v = frame.popStack();
         if (!v.getType().hasDoubleSize()) {
-            pop();
+            pop(frame);
         }
     }
 
-    private void dup_x1() {
+    private void dup_x1(Frame frame) {
         Ref v1 = frame.popStack();
         ensureCategory1(v1);
         Ref v2 = frame.popStack();
@@ -73,7 +76,7 @@ class StackModInst {
         frame.pushStack(v1);
     }
 
-    private void dup_x2() {
+    private void dup_x2(Frame frame) {
         Ref v1 = frame.popStack();
         Ref v2 = frame.popStack();
         ensureCategory1(v1);
@@ -90,7 +93,7 @@ class StackModInst {
         }
     }
 
-    private void dup2() {
+    private void dup2(Frame frame) {
         Ref v1 = frame.popStack();
         if (v1.getType().hasDoubleSize()) {
             frame.pushStack(v1);
@@ -105,7 +108,7 @@ class StackModInst {
         }
     }
 
-    private void dup2_x1() {
+    private void dup2_x1(Frame frame) {
         Ref v1 = frame.popStack();
         Ref v2 = frame.popStack();
         ensureCategory1(v2);
@@ -125,7 +128,7 @@ class StackModInst {
         }
     }
 
-    private void dup2_x2() {
+    private void dup2_x2(Frame frame) {
         Ref v1 = frame.popStack();
         Ref v2 = frame.popStack();
         if (v1.getType().hasDoubleSize()) {
@@ -162,7 +165,7 @@ class StackModInst {
         }
     }
 
-    private void swap() {
+    private void swap(Frame frame) {
         Ref v1 = frame.popStack();
         ensureCategory1(v1);
         Ref v2 = frame.popStack();

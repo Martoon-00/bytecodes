@@ -1,12 +1,15 @@
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.*;
 import scan.Cache;
 import scan.MethodRef;
 import scan.RefType;
 import scan.ref.MethodParamRef;
 import scan.ref.Ref;
 import scan.ref.ThisRef;
+import tree.ControlFlow;
+import scan.scanners.MethodScanner;
+import tree.value.ReplaceableValue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,29 +41,31 @@ public class ClassScanner extends ClassVisitor {
 //
 //        effects.print(System.out);
 
-        for (MethodScanner methodScanner : cn.methodScanners) {
-            System.out.println("Analysis result for " + methodScanner.getMethod());
-            methodScanner.getEffects()
-                    .print();
-            System.out.println();
-            System.out.println();
-        }
-
-
-//        for (MethodNode methodNode : methodNodes) {
-//            ControlFlow cf = new ControlFlow();
-//            Frame<BasicValue>[] result = cf.analyze(clazz, methodNode);
+//        for (MethodScanner methodScanner : cn.methodScanners) {
+//            System.out.println("Analysis result for " + methodScanner.getMethod());
+//            methodScanner.getEffects()
+//                    .print();
+//            System.out.println();
+//            System.out.println();
 //        }
+
+
+        for (MethodNode methodNode : methodNodes) {
+            ControlFlow cf = new ControlFlow();
+            Frame<ReplaceableValue>[] res = cf.analyze(clazz, methodNode);
+            res[20].getLocal(2).eliminateRecursion();
+            double a = 2;
+        }
     }
 
-    public MethodVisitor visitMethod0(int access, String name, String desc, String signature, String[] exceptions) {
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodNode methodNode = new MethodNode(Opcodes.ASM4, access, name, desc, signature, exceptions);
         methodNodes.add(methodNode);
         return methodNode;
     }
 
-    @Override
-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+    //    @Override
+    public MethodVisitor visitMethod0(int access, String name, String desc, String signature, String[] exceptions) {
         MethodRef methodRef = MethodRef.of(clazz, name, desc);
 
         ArrayList<Ref> params = new ArrayList<>();

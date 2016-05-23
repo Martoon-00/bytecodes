@@ -6,16 +6,19 @@ import scan.frame.Frame;
 import scan.ref.Ref;
 import scan.ref.op.UnaryOpRef;
 
+import java.util.function.Supplier;
+
 class CastInst {
     private final Cache cache;
-    private final Frame frame;
+    private final Supplier<Frame> curFrame;
 
-    public CastInst(Cache cache, Frame frame) {
+    public CastInst(Cache cache, Supplier<Frame> curFrame) {
         this.cache = cache;
-        this.frame = frame;
+        this.curFrame = curFrame;
     }
 
     public void apply(int opcode) {
+        Frame frame = curFrame.get();
         Ref v = frame.popStack();
         UnaryOpRef res = UnaryOpRef.of(opcode, v);
         frame.pushStack(res);

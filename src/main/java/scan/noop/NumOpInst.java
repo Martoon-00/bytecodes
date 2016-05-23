@@ -7,6 +7,8 @@ import scan.ref.Ref;
 import scan.ref.op.BinOpRef;
 import scan.ref.op.UnaryOpRef;
 
+import java.util.function.Supplier;
+
 class NumOpInst {
 //    private static final RefType[] types = {RefType.INT, RefType.LONG};
 //    private static final RefType[] typesExt = {RefType.INT, RefType.LONG, RefType.FLOAT, RefType.DOUBLE};
@@ -17,14 +19,16 @@ class NumOpInst {
 //    private static final BinOpType[] logicTypes = {BinOpType.AND, BinOpType.OR, BinOpType.XOR};
 
     private final Cache cache;
-    private final Frame frame;
+    private final Supplier<Frame> curFrame;
 
-    public NumOpInst(Cache cache, Frame frame) {
+    public NumOpInst(Cache cache, Supplier<Frame> curFrame) {
         this.cache = cache;
-        this.frame = frame;
+        this.curFrame = curFrame;
     }
 
     public void apply(int opcode) {
+        Frame frame = this.curFrame.get();
+
         //  96 - 115:  (+, -, *, /, %) x (int, long, float, double)
         // 116 - 119:  (unary -)       x (int, long, float, double)
         // 120 - 125:  (<<, >>, >>>)   x (int, long)

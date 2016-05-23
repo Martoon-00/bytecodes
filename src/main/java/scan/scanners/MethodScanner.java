@@ -1,3 +1,5 @@
+package scan.scanners;
+
 import org.objectweb.asm.*;
 import scan.Cache;
 import scan.FieldRef;
@@ -23,8 +25,9 @@ import java.util.*;
 public class MethodScanner extends MethodVisitor {
     private final MethodRef method;
     private final Cache cache;
-    private final Frame frame;
     private final EffectsCollector effects;
+
+    private final ContextScanner<MutableFrame> context;
 
     private final Map<Label, Frame> visitedLabels = new HashMap<>();
     private final Map<Label, Frame> expectedLabels = new HashMap<>();
@@ -32,12 +35,13 @@ public class MethodScanner extends MethodVisitor {
     private final NoOpInst noOpInst;
 
     public MethodScanner(MethodRef method, List<Ref> params, Cache cache) {
-        super(Opcodes.ASM4, new ContextScanner());
+        super(Opcodes.ASM4, new ContextScanner<>(new MutableFrame(method, params), MutableFrame::copy));
+        //noinspection unchecked
+        this.context = (ContextScanner<MutableFrame>) mv;
         this.method = method;
         this.cache = cache;
-        this.frame = new MutableFrame(method, params);
         this.effects = new EffectsCollector(method);
-        this.noOpInst = new NoOpInst(cache, frame, effects);
+        this.noOpInst = new NoOpInst(cache, context::getCurFrame, effects);
     }
 
     @Override
@@ -49,6 +53,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitIntInsn(int opcode, int operand) {
         super.visitIntInsn(opcode, operand);
+        Frame frame = context.getCurFrame();
         switch (opcode) {
             case Opcodes.BIPUSH:
                 frame.pushStack(cache.constOf((byte) operand));
@@ -67,6 +72,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitVarInsn(int opcode, int var) {
         super.visitVarInsn(opcode, var);
+        Frame frame = context.getCurFrame();
         switch (opcode) {
             case Opcodes.ILOAD:
             case Opcodes.FLOAD:
@@ -93,6 +99,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitTypeInsn(int opcode, String type) {
         super.visitTypeInsn(opcode, type);
+        Frame frame = context.getCurFrame();
         switch (opcode) {
             case Opcodes.NEW:
                 frame.pushStack(Arbitrary.val(RefType.OBJECTREF));
@@ -116,6 +123,7 @@ public class MethodScanner extends MethodVisitor {
         RefType type = RefType.fromAsmType(Type.getType(desc));
         FieldRef field = FieldRef.of(owner, name, type);
 
+        Frame frame = context.getCurFrame();
         switch (opcode) {
             case Opcodes.GETFIELD:
                 frame.popStack();
@@ -145,6 +153,7 @@ public class MethodScanner extends MethodVisitor {
         ArrayList<Ref> params = new ArrayList<>();
         Type methodType = Type.getMethodType(desc);
 
+        Frame frame = context.getCurFrame();
         if (opcode != Opcodes.INVOKESTATIC)
             params.add(frame.popStack());
         for (Type type : methodType.getArgumentTypes()) {
@@ -165,6 +174,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitLdcInsn(Object cst) {
         super.visitLdcInsn(cst);
+        Frame frame = context.getCurFrame();
         if (cst instanceof Integer) {
             frame.pushStack(cache.constOf((int) cst));
         } else if (cst instanceof Float) {
@@ -197,6 +207,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitIincInsn(int index, int delta) {
         super.visitIincInsn(index, delta);
+        Frame frame = context.getCurFrame();
         Ref oldVal = frame.getLocal(index);
         Ref newVal = BinOpRef.of(Opcodes.IADD, oldVal, cache.constOf(delta));
         frame.setLocal(index, newVal);
@@ -205,6 +216,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitMultiANewArrayInsn(String desc, int dims) {
         super.visitMultiANewArrayInsn(desc, dims);
+        Frame frame = context.getCurFrame();
         frame.replaceStack(dims, Arbitrary.val(RefType.OBJECTREF));
     }
 
@@ -216,6 +228,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitLabel(Label label) {
         super.visitLabel(label);
+        Frame frame = context.getCurFrame();
         visitedLabels.put(label, frame.copy());
 
         Frame expectedFrame = expectedLabels.remove(label);
@@ -227,6 +240,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitJumpInsn(int opcode, Label label) {
         super.visitJumpInsn(opcode, label);
+        Frame frame = context.getCurFrame();
         boolean conditional;
         switch (opcode) {
             case Opcodes.IFEQ:
@@ -264,10 +278,10 @@ public class MethodScanner extends MethodVisitor {
         if (visitedFrame == null) {
             addForwardBranch(label);
         } else {
-            this.frame.invalidatingMerge(visitedFrame);
+            frame.invalidatingMerge(visitedFrame);
         }
         if (!conditional) {
-            this.frame.setInVacuum();
+            frame.setInVacuum();
         }
 
 //        Frame otherBranchFrame = expectedLabels.get(label);
@@ -279,6 +293,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
         super.visitTableSwitchInsn(min, max, dflt, labels);
+        Frame frame = context.getCurFrame();
         frame.popStack();
         for (Label label : labels) {
             addForwardBranch(label);
@@ -290,6 +305,7 @@ public class MethodScanner extends MethodVisitor {
     @Override
     public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
         super.visitLookupSwitchInsn(dflt, keys, labels);
+        Frame frame = context.getCurFrame();
         frame.popStack();
         for (Label label : labels) {
             addForwardBranch(label);
@@ -304,11 +320,12 @@ public class MethodScanner extends MethodVisitor {
     }
 
     private void addForwardBranch(Label label) {
+        Frame frame = context.getCurFrame();
         Frame expectedFrame = expectedLabels.get(label);
         if (expectedFrame != null) {
-            expectedFrame.merge(this.frame);
+            expectedFrame.merge(frame);
         } else {
-            expectedLabels.put(label, this.frame.copy());
+            expectedLabels.put(label, frame.copy());
         }
     }
 

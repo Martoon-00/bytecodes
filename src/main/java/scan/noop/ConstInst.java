@@ -5,16 +5,19 @@ import scan.Cache;
 import scan.frame.Frame;
 import scan.ref.consts.NullConst;
 
+import java.util.function.Supplier;
+
 class ConstInst {
     private final Cache cache;
-    private final Frame frame;
+    private final Supplier<Frame> curFrame;
 
-    public ConstInst(Cache cache, Frame frame) {
+    public ConstInst(Cache cache, Supplier<Frame> curFrame) {
         this.cache = cache;
-        this.frame = frame;
+        this.curFrame = curFrame;
     }
 
     public void apply(int opcode) {
+        Frame frame = curFrame.get();
         switch (opcode) {
             case Opcodes.ACONST_NULL:
                 frame.pushStack(NullConst.val());

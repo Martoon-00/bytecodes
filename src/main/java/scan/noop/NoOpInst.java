@@ -8,9 +8,11 @@ import scan.except.UnsupportedOpcodeException;
 import scan.frame.Frame;
 import scan.ref.Arbitrary;
 
+import java.util.function.Supplier;
+
 public class NoOpInst {
     private final Cache cache;
-    private final Frame frame;
+    private final Supplier<Frame> curFrame;
     private final EffectsCollector effects;
 
     private final ConstInst constInst;
@@ -20,17 +22,17 @@ public class NoOpInst {
     private final CmpInst cmpInst;
     private final StackModInst stackModInst;
 
-    public NoOpInst(Cache cache, Frame frame, EffectsCollector effects) {
+    public NoOpInst(Cache cache, Supplier<Frame> curFrame, EffectsCollector effects) {
         this.cache = cache;
-        this.frame = frame;
+        this.curFrame = curFrame;
         this.effects = effects;
 
-        constInst = new ConstInst(cache, frame);
-        arrayInst = new ArrayInst(frame);
-        numOpInst = new NumOpInst(cache, frame);
-        castInst = new CastInst(cache, frame);
-        cmpInst = new CmpInst(cache, frame);
-        stackModInst = new StackModInst(frame);
+        constInst = new ConstInst(cache, this.curFrame);
+        arrayInst = new ArrayInst(this.curFrame);
+        numOpInst = new NumOpInst(cache, this.curFrame);
+        castInst = new CastInst(cache, this.curFrame);
+        cmpInst = new CmpInst(cache, this.curFrame);
+        stackModInst = new StackModInst(this.curFrame);
     }
 
     // 0                : nop
@@ -45,6 +47,7 @@ public class NoOpInst {
     // 191              : throw
     // 194, 195         : monitors
     public void apply(int opcode) {
+        Frame frame = this.curFrame.get();
         switch (opcode) {
             case Opcodes.NOP:
                 break;

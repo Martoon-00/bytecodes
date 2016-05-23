@@ -5,16 +5,19 @@ import scan.frame.Frame;
 import scan.ref.Ref;
 import scan.ref.op.BinOpRef;
 
+import java.util.function.Supplier;
+
 class CmpInst {
     private final Cache cache;
-    private final Frame frame;
+    private final Supplier<Frame> curFrame;
 
-    public CmpInst(Cache cache, Frame frame) {
+    public CmpInst(Cache cache, Supplier<Frame> curFrame) {
         this.cache = cache;
-        this.frame = frame;
+        this.curFrame = curFrame;
     }
 
     public void apply(int opcode) {
+        Frame frame = curFrame.get();
         Ref v2 = frame.popStack();
         Ref v1 = frame.popStack();
         BinOpRef res = BinOpRef.of(opcode, v1, v2);

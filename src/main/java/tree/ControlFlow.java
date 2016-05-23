@@ -1,9 +1,10 @@
-import org.objectweb.asm.tree.TryCatchBlockNode;
-import org.objectweb.asm.tree.analysis.Analyzer;
-import org.objectweb.asm.tree.analysis.BasicValue;
-import org.objectweb.asm.tree.analysis.Frame;
+package tree;
 
-public class ControlFlow extends Analyzer<BasicValue> {
+import org.objectweb.asm.tree.TryCatchBlockNode;
+import org.objectweb.asm.tree.analysis.*;
+import tree.value.ReplaceableValue;
+
+public class ControlFlow extends Analyzer<ReplaceableValue> {
     int total = 0;
 
     public ControlFlow() {
@@ -11,13 +12,13 @@ public class ControlFlow extends Analyzer<BasicValue> {
     }
 
     @Override
-    protected Frame<BasicValue> newFrame(int nLocals, int nStack) {
-        return super.newFrame(nLocals, nStack);
+    protected Frame<ReplaceableValue> newFrame(int nLocals, int nStack) {
+        return new LolFrame(nLocals, nStack);
     }
 
     @Override
-    protected Frame<BasicValue> newFrame(Frame<? extends BasicValue> src) {
-        return super.newFrame(src);
+    protected Frame<ReplaceableValue> newFrame(Frame<? extends ReplaceableValue> src) {
+        return new LolFrame(src);
     }
 
     @Override
@@ -29,11 +30,14 @@ public class ControlFlow extends Analyzer<BasicValue> {
 
     @Override
     protected boolean newControlFlowExceptionEdge(int insn, int successor) {
+        System.out.println("E: " + insn + " -> " + successor);
         return super.newControlFlowExceptionEdge(insn, successor);
     }
 
     @Override
     protected boolean newControlFlowExceptionEdge(int insn, TryCatchBlockNode tcb) {
+//        System.out.println("E: " + insn + " -> " + tcb.start + "-" + tcb.end);
         return super.newControlFlowExceptionEdge(insn, tcb);
     }
+
 }
