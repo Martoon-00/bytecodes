@@ -1,16 +1,13 @@
 public class Clazz {
 
     public Clazz(int[] array) {
-        int s = 1;
-//        if (s > 5) {
-//            s = s * 3;
-//        } else {
-//            s = 4;
-//        }
-        while (s < 10) {
-            s = s * 3;
-        }
-//        System.out.println(s);
+        a(1, 10);
+        a(2, 10);
+        a(1, 20);
+    }
+
+    private int a(int k, int s) {
+        return k;
     }
 
 //    static void test() {

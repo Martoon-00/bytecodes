@@ -6,18 +6,18 @@ import org.objectweb.asm.Type;
 import java.util.Set;
 import java.util.function.Function;
 
-public class ReplaceableValue extends MyValue implements Replaceable {
+public class LinkValue extends MyValue implements Replaceable {
     private MyValue value;
 
-    private ReplaceableValue(@NotNull MyValue value) {
+    private LinkValue(@NotNull MyValue value) {
         super(value.getType());
         this.value = value;
     }
 
-    public static ReplaceableValue of(MyValue value) {
+    public static LinkValue of(MyValue value) {
         if (value == null)
             return null;
-        return new ReplaceableValue(value);
+        return new LinkValue(value);
     }
 
     @Override
@@ -46,16 +46,11 @@ public class ReplaceableValue extends MyValue implements Replaceable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        MyValue v = value;
-        while (v instanceof ReplaceableValue)
-            v = ((ReplaceableValue) v).value;
-        return o.equals(v);
-    }
-
-    @Override
-    public int hashCode() {
-        return value.hashCode();
+    public MyValue simplify() {
+//        if (value instanceof AnyValue || value instanceof NoValue)
+//            return value;
+//        return new LinkValue(value);
+        return value;
     }
 
     @Override

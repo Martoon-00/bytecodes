@@ -1,15 +1,19 @@
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.analysis.*;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.Frame;
 import scan.Cache;
 import scan.MethodRef;
 import scan.RefType;
 import scan.ref.MethodParamRef;
 import scan.ref.Ref;
 import scan.ref.ThisRef;
-import tree.ControlFlow;
 import scan.scanners.MethodScanner;
-import tree.value.ReplaceableValue;
+import tree.ControlFlow;
+import tree.FrameUtil;
+import tree.LolInterpreter;
+import tree.value.LinkValue;
+import tree.value.MyValue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,9 +55,17 @@ public class ClassScanner extends ClassVisitor {
 
 
         for (MethodNode methodNode : methodNodes) {
-            ControlFlow cf = new ControlFlow();
-            Frame<ReplaceableValue>[] res = cf.analyze(clazz, methodNode);
-            res[20].getLocal(2).eliminateRecursion();
+            MethodRef method = MethodRef.of(clazz, methodNode.name, methodNode.desc);
+            ControlFlow cf = new ControlFlow(new LolInterpreter(method));
+            Frame<LinkValue>[] res = cf.analyze(clazz, methodNode);
+            for (Frame<LinkValue> frame : res) {
+                if (frame != null) {
+                    FrameUtil.map(frame, MyValue::eliminateRecursion);
+                    FrameUtil.map(frame, MyValue::simplify);
+                }
+            }
+            System.out.println("Effects for " + method);
+            cf.getEffects().print();
             double a = 2;
         }
     }

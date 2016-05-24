@@ -1,6 +1,9 @@
 package scan;
 
+import javax.annotation.Nullable;
+
 public class MethodRef {
+    @Nullable
     private final String clazz;
     private final String name;
     private final String desc;
@@ -17,6 +20,15 @@ public class MethodRef {
 
     public String getName() {
         return name;
+    }
+
+    @Nullable
+    public String getClazz() {
+        return clazz;
+    }
+
+    public String getDesc() {
+        return desc;
     }
 
     @Override

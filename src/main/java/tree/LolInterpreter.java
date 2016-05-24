@@ -8,30 +8,38 @@ import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.BasicInterpreter;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.Interpreter;
+import scan.MethodRef;
 import scan.except.UnsupportedOpcodeException;
+import tree.effect.EffectsCollector;
+import tree.effect.MethodCallEffect;
 import tree.value.*;
 import tree.value.op.BinOpValue;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class LolInterpreter extends Interpreter<ReplaceableValue> {
+public class LolInterpreter extends Interpreter<LinkValue> {
 
     private final BasicInterpreter interpreter = new BasicInterpreter();
 
-    private ConstValue constValue = new ConstValue(null, null);
+    private final MethodRef method;
+    private final EffectsCollector effects;
 
-    protected LolInterpreter() {
+    public LolInterpreter(MethodRef method) {
         super(Opcodes.ASM4);
+        this.method = method;
+        effects = new EffectsCollector(method);
     }
 
     @Override
-    public ReplaceableValue newValue(Type type) {
-        BasicValue v = interpreter.newValue(type);
-        return ReplaceableValue.of(MyBasicValue.of(v));
+    public LinkValue newValue(Type type) {
+        MyValue v = type == null ? new NoValue()
+                : MyBasicValue.of(interpreter.newValue(type));
+        return LinkValue.of(v);
     }
 
     @Override
-    public ReplaceableValue newOperation(AbstractInsnNode insn) throws AnalyzerException {
+    public LinkValue newOperation(AbstractInsnNode insn) throws AnalyzerException {
         MyValue answer;
         switch (insn.getOpcode()) {
             case Opcodes.ACONST_NULL:
@@ -116,29 +124,30 @@ public class LolInterpreter extends Interpreter<ReplaceableValue> {
                 answer = MyBasicValue.of(BasicValue.RETURNADDRESS_VALUE);
                 break;
             case Opcodes.GETSTATIC:
-                answer = new ConstValue(Type.BYTE_TYPE, "Field: " + ((FieldInsnNode) insn).desc);
+                FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+                answer = FieldRef.of(fieldInsn.owner, fieldInsn.name, Type.getObjectType(fieldInsn.desc));
                 break;
             case Opcodes.NEW:
-                answer = new ConstValue(Type.BYTE_TYPE, "New: " + ((TypeInsnNode) insn).desc);
+                answer = new AnyValue(Type.getObjectType(((TypeInsnNode) insn).desc));
                 break;
             default:
                 throw new UnsupportedOpcodeException(insn.getOpcode());
         }
-        return ReplaceableValue.of(answer);
+        return LinkValue.of(answer);
     }
 
     @Override
-    public ReplaceableValue copyOperation(AbstractInsnNode insn, ReplaceableValue value) throws AnalyzerException {
-        return ReplaceableValue.of(MyBasicValue.of(interpreter.copyOperation(insn, value)));
+    public LinkValue copyOperation(AbstractInsnNode insn, LinkValue value) throws AnalyzerException {
+        return LinkValue.of(MyBasicValue.of(interpreter.copyOperation(insn, value)));
     }
 
     @Override
-    public ReplaceableValue unaryOperation(AbstractInsnNode insn, ReplaceableValue value) throws AnalyzerException {
-        return ReplaceableValue.of(MyBasicValue.of(interpreter.unaryOperation(insn, value)));
+    public LinkValue unaryOperation(AbstractInsnNode insn, LinkValue value) throws AnalyzerException {
+        return LinkValue.of(MyBasicValue.of(interpreter.unaryOperation(insn, value)));
     }
 
     @Override
-    public ReplaceableValue binaryOperation(AbstractInsnNode insn, ReplaceableValue value1, ReplaceableValue value2) throws AnalyzerException {
+    public LinkValue binaryOperation(AbstractInsnNode insn, LinkValue value1, LinkValue value2) throws AnalyzerException {
         int opcode = insn.getOpcode();
         MyValue res;
         if (opcode == Opcodes.PUTFIELD) {
@@ -148,26 +157,40 @@ public class LolInterpreter extends Interpreter<ReplaceableValue> {
         } else {
             res = BinOpValue.of(opcode, value1, value2);
         }
-        return ReplaceableValue.of(res);
+        return LinkValue.of(res);
     }
 
     @Override
-    public ReplaceableValue ternaryOperation(AbstractInsnNode insn, ReplaceableValue value1, ReplaceableValue value2, ReplaceableValue value3) throws AnalyzerException {
-        return ReplaceableValue.of(MyBasicValue.of(interpreter.ternaryOperation(insn, value1, value2, value3)));
+    public LinkValue ternaryOperation(AbstractInsnNode insn, LinkValue value1, LinkValue value2, LinkValue value3) throws AnalyzerException {
+        return LinkValue.of(MyBasicValue.of(interpreter.ternaryOperation(insn, value1, value2, value3)));
     }
 
     @Override
-    public ReplaceableValue naryOperation(AbstractInsnNode insn, List<? extends ReplaceableValue> values) throws AnalyzerException {
-        return ReplaceableValue.of(MyBasicValue.of(interpreter.naryOperation(insn, values)));
+    public LinkValue naryOperation(AbstractInsnNode insn, List<? extends LinkValue> values) throws AnalyzerException {
+        int opcode = insn.getOpcode();
+        if (opcode == Opcodes.MULTIANEWARRAY) {
+            return newValue(Type.getType(((MultiANewArrayInsnNode) insn).desc));
+        } else if (opcode == Opcodes.INVOKEDYNAMIC){
+            InvokeDynamicInsnNode node = (InvokeDynamicInsnNode) insn;
+            effects.addMethodCall(new MethodCallEffect(method, MethodRef.of(null, node.name, node.desc), new ArrayList<>(values)));
+            // TODO: return value
+            return newValue(Type.getReturnType(node.desc));
+        } else {
+            MethodInsnNode node = (MethodInsnNode) insn;
+            effects.addMethodCall(new MethodCallEffect(method, MethodRef.of(node.owner, node.name, node.desc), new ArrayList<>(values)));
+            // TODO: return value
+            return newValue(Type.getReturnType(node.desc));
+        }
     }
 
     @Override
-    public void returnOperation(AbstractInsnNode insn, ReplaceableValue value, ReplaceableValue expected) throws AnalyzerException {
-        interpreter.returnOperation(insn, value, expected);
+    public void returnOperation(AbstractInsnNode insn, LinkValue value, LinkValue expected) throws AnalyzerException {
+        MyValue.assertSameType(value, expected);
+        effects.addReturnValue(value);
     }
 
     @Override
-    public ReplaceableValue merge(ReplaceableValue v, ReplaceableValue w) {
+    public LinkValue merge(LinkValue v, LinkValue w) {
         throw new UnsupportedOperationException();
 //        if (!v.getType().equals(w.getType()))
 //            throw new InvalidBytecodeException("Different types of merged values");
@@ -175,5 +198,11 @@ public class LolInterpreter extends Interpreter<ReplaceableValue> {
 //        return AltValue.of(type, v, w);
     }
 
+    public EffectsCollector getEffects() {
+        return effects;
+    }
 
+    public MethodRef getMethod() {
+        return method;
+    }
 }

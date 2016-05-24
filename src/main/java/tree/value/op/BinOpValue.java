@@ -2,6 +2,7 @@ package tree.value.op;
 
 import org.objectweb.asm.Type;
 import scan.except.UnsupportedOpcodeException;
+import tree.value.AnyValue;
 import tree.value.MyValue;
 
 import java.util.Set;
@@ -56,6 +57,15 @@ public abstract class BinOpValue extends MyValue {
     protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
         MyValue a2 = a.eliminateRecursion(visited, true);
         MyValue b2 = b.eliminateRecursion(visited, true);
+        return BinOpValue.of(opcode, a2, b2);
+    }
+
+    @Override
+    public MyValue simplify() {
+        MyValue a2 = a.simplify();
+        MyValue b2 = b.simplify();
+        if (a2 instanceof AnyValue || b2 instanceof AnyValue)
+            return new AnyValue(getType());
         return BinOpValue.of(opcode, a2, b2);
     }
 }

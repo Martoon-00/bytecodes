@@ -1,10 +1,8 @@
 package tree.value;
 
-import org.objectweb.asm.Type;
-
 public class NoValue extends FinalValue {
-    public NoValue(Type type) {
-        super(type);
+    public NoValue() {
+        super(null);
     }
 
     @Override

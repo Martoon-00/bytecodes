@@ -2,6 +2,7 @@ package tree.value;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.analysis.BasicValue;
+import scan.except.InvalidBytecodeException;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +25,7 @@ public abstract class MyValue extends BasicValue {
     public MyValue eliminateRecursion(Set<MyValue> visited, boolean complicated) {
         boolean added = visited.add(this);
         if (!added) {
-            return complicated ? new AnyValue(getType()) : new NoValue(getType());
+            return complicated ? new AnyValue(getType()) : new NoValue();
         } else {
             MyValue res = proceedElimRec(visited, complicated);
             visited.remove(this);
@@ -35,4 +36,24 @@ public abstract class MyValue extends BasicValue {
     public final MyValue eliminateRecursion() {
         return eliminateRecursion(new HashSet<>(), false);
     }
+
+    public abstract MyValue simplify();
+
+    public static void assertSameType(MyValue v1, MyValue v2) {
+        Type t1 = v1.getType();
+        Type t2 = v2.getType();
+        if (t1 != null && t2 != null && !t1.equals(t2))
+            throw new InvalidBytecodeException(String.format("Alternatives with different types: %s vs %s", t1, t2));
+    }
+
+    @Override
+    public boolean equals(Object value) {
+        return this == value;
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
+    }
+
 }

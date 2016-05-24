@@ -11,6 +11,7 @@ public class MyBasicValue extends MyValue {
     private final BasicValue value;
 
     private MyBasicValue(@NotNull BasicValue value) {
+        // TODO: composition -> inheritance?
         super(null);
         this.value = value;
     }
@@ -46,21 +47,8 @@ public class MyBasicValue extends MyValue {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-
-        MyBasicValue that = (MyBasicValue) o;
-
-        return value.equals(that.value);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + value.hashCode();
-        return result;
+    public MyValue simplify() {
+        return this;
     }
 
     @Override
