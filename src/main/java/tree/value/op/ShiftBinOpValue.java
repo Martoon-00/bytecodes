@@ -15,7 +15,7 @@ public class ShiftBinOpValue extends BinOpValue {
     }
 
     @Override
-    protected Type evalType() {
+    public Type getType() {
         return types[(opcode - startOpcode) % types.length];
     }
 

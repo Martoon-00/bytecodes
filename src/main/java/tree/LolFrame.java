@@ -14,6 +14,18 @@ public class LolFrame extends Frame<LinkValue> {
 
     public LolFrame(Frame<? extends LinkValue> src) {
         super(src);
+        // wrap to links, needed on moving forward
+        for (int i = 0; i < getLocals(); i++) {
+            setLocal(i, LinkValue.of(getLocal(i)));
+        }
+        LinkValue[] stack = new LinkValue[getStackSize()];
+        for (int i = 0; i < getStackSize(); i++) {
+            stack[i] = LinkValue.of(getStack(i));
+        }
+        clearStack();
+        for (LinkValue v : stack) {
+            push(v);
+        }
     }
 
     @Override
@@ -24,15 +36,20 @@ public class LolFrame extends Frame<LinkValue> {
 
         // locals
         for (int i = 0; i < getLocals(); i++) {
-            int finalI = i;
-            getLocal(i).replaceEntry(v -> AltValue.of(v, frame.getLocal(finalI)));
+            merge(getLocal(i), frame.getLocal(i));
         }
         // stack
         for (int i = 0; i < frame.getStackSize(); i++) {
-            int finalI = i;
-            getStack(i).replaceEntry(v -> AltValue.of(v, frame.getStack(finalI)));
+            merge(getStack(i), frame.getStack(i));
         }
         return false;
+    }
+
+    private void merge(LinkValue v, LinkValue w) {
+        // for case of same links
+        if (v == w)
+            return;
+        v.replaceEntry(x -> LinkValue.of(AltValue.of(x, w)));
     }
 
     @Override

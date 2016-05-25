@@ -8,7 +8,7 @@ public class MethodRef {
     private final String name;
     private final String desc;
 
-    private MethodRef(String clazz, String name, String desc) {
+    private MethodRef(@Nullable String clazz, String name, String desc) {
         this.clazz = clazz;
         this.name = name;
         this.desc = desc;

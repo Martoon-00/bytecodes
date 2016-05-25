@@ -46,6 +46,17 @@ public abstract class MyValue extends BasicValue {
             throw new InvalidBytecodeException(String.format("Alternatives with different types: %s vs %s", t1, t2));
     }
 
+    public int getSize() {
+        Type type = getType();
+        return type == Type.LONG_TYPE || type == Type.DOUBLE_TYPE ? 2 : 1;
+    }
+
+    public boolean isReference() {
+        Type type = getType();
+        return type != null
+                && (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY);
+    }
+
     @Override
     public boolean equals(Object value) {
         return this == value;

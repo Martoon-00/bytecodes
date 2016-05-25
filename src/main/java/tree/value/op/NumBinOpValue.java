@@ -2,7 +2,6 @@ package tree.value.op;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import scan.ref.Ref;
 import tree.value.MyValue;
 
 public class NumBinOpValue extends BinOpValue {
@@ -15,7 +14,7 @@ public class NumBinOpValue extends BinOpValue {
     }
 
     @Override
-    protected Type evalType() {
+    public Type getType() {
         return types[(opcode - startOpcode) % types.length];
     }
 

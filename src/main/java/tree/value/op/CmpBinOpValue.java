@@ -11,7 +11,7 @@ public class CmpBinOpValue extends BinOpValue {
     }
 
     @Override
-    protected Type evalType() {
+    public Type getType() {
         switch (opcode) {
             case Opcodes.LCMP:
                 return Type.LONG_TYPE;

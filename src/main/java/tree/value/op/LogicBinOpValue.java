@@ -4,8 +4,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import tree.value.MyValue;
 
-import java.util.Set;
-
 public class LogicBinOpValue extends BinOpValue {
     private final static int startOpcode = Opcodes.IAND;
     private final static Type[] types = {Type.INT_TYPE, Type.LONG_TYPE};
@@ -17,7 +15,7 @@ public class LogicBinOpValue extends BinOpValue {
     }
 
     @Override
-    protected Type evalType() {
+    public Type getType() {
         return types[(opcode - startOpcode) % types.length];
     }
 

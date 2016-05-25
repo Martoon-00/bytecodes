@@ -34,7 +34,7 @@ public class EffectsCollector {
     public EffectsView build() {
         MyValue returnValue = AltValue.of(returnValues.toArray(new MyValue[0]));
 
-        returnValue.simplify();
+        returnValue = returnValue.simplify();
         methodCalls.forEach(MethodCallEffect::simplify);
         fieldAssigns.forEach(FieldAssignEffect::simplify);
 

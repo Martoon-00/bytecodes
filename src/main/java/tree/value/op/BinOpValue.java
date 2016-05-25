@@ -39,11 +39,7 @@ public abstract class BinOpValue extends MyValue {
     }
 
     @Override
-    public final Type getType() {
-        return evalType();
-    }
-
-    protected abstract Type evalType();
+    public abstract Type getType();
 
     protected String showInfixOp(String op) {
         return String.format("(%s %s %s)", a, op, b);
@@ -67,5 +63,27 @@ public abstract class BinOpValue extends MyValue {
         if (a2 instanceof AnyValue || b2 instanceof AnyValue)
             return new AnyValue(getType());
         return BinOpValue.of(opcode, a2, b2);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BinOpValue that = (BinOpValue) o;
+
+        if (opcode != that.opcode) return false;
+        if (!a.equals(that.a)) return false;
+        return b.equals(that.b);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 7;
+        result = 31 * result + opcode;
+        result = 31 * result + a.hashCode();
+        result = 31 * result + b.hashCode();
+        return result;
     }
 }

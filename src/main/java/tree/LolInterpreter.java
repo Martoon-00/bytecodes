@@ -11,9 +11,11 @@ import org.objectweb.asm.tree.analysis.Interpreter;
 import scan.MethodRef;
 import scan.except.UnsupportedOpcodeException;
 import tree.effect.EffectsCollector;
+import tree.effect.FieldAssignEffect;
 import tree.effect.MethodCallEffect;
 import tree.value.*;
 import tree.value.op.BinOpValue;
+import tree.value.op.UnaryOpValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,20 +140,44 @@ public class LolInterpreter extends Interpreter<LinkValue> {
 
     @Override
     public LinkValue copyOperation(AbstractInsnNode insn, LinkValue value) throws AnalyzerException {
-        return LinkValue.of(MyBasicValue.of(interpreter.copyOperation(insn, value)));
+        return LinkValue.of(value);
     }
 
     @Override
     public LinkValue unaryOperation(AbstractInsnNode insn, LinkValue value) throws AnalyzerException {
-        return LinkValue.of(MyBasicValue.of(interpreter.unaryOperation(insn, value)));
+        int opcode = insn.getOpcode();
+
+        if (UnaryOpValue.isUnaryOp(opcode))
+            return LinkValue.of(UnaryOpValue.of(opcode, value));
+        else {
+            switch (opcode) {
+                case Opcodes.PUTSTATIC:
+                    FieldInsnNode putInsn = (FieldInsnNode) insn;
+                    FieldRef putField = FieldRef.of(putInsn.owner, putInsn.name, Type.getObjectType(putInsn.desc));
+                    effects.addFieldAssign(FieldAssignEffect.of(method, putField, value));
+                case Opcodes.GETFIELD:
+                    FieldInsnNode getInsn = (FieldInsnNode) insn;
+                    FieldRef getField = FieldRef.of(getInsn.owner, getInsn.name, Type.getObjectType(getInsn.desc));
+                    return LinkValue.of(getField);
+                default:
+                    BasicValue delegate = interpreter.unaryOperation(insn, value);
+                    return delegate == null ? null :
+                            LinkValue.of(new AnyValue(delegate.getType()));
+
+            }
+        }
     }
 
     @Override
-    public LinkValue binaryOperation(AbstractInsnNode insn, LinkValue value1, LinkValue value2) throws AnalyzerException {
+    public LinkValue binaryOperation(AbstractInsnNode insn, LinkValue value1, LinkValue value2) throws
+            AnalyzerException {
         int opcode = insn.getOpcode();
         MyValue res;
         if (opcode == Opcodes.PUTFIELD) {
-            return null;
+            FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+            FieldRef field = FieldRef.of(fieldInsn.owner, fieldInsn.name, Type.getObjectType(fieldInsn.desc));
+            effects.addFieldAssign(FieldAssignEffect.of(method, field, value2));
+            res = null;
         } else if (opcode >= 46 && opcode < 54) {  // load from array
             res = new AnyValue(interpreter.binaryOperation(insn, value1, value2).getType());
         } else {
@@ -161,16 +187,18 @@ public class LolInterpreter extends Interpreter<LinkValue> {
     }
 
     @Override
-    public LinkValue ternaryOperation(AbstractInsnNode insn, LinkValue value1, LinkValue value2, LinkValue value3) throws AnalyzerException {
+    public LinkValue ternaryOperation(AbstractInsnNode insn, LinkValue value1, LinkValue value2, LinkValue
+            value3) throws AnalyzerException {
         return LinkValue.of(MyBasicValue.of(interpreter.ternaryOperation(insn, value1, value2, value3)));
     }
 
     @Override
-    public LinkValue naryOperation(AbstractInsnNode insn, List<? extends LinkValue> values) throws AnalyzerException {
+    public LinkValue naryOperation(AbstractInsnNode insn, List<? extends LinkValue> values) throws
+            AnalyzerException {
         int opcode = insn.getOpcode();
         if (opcode == Opcodes.MULTIANEWARRAY) {
             return newValue(Type.getType(((MultiANewArrayInsnNode) insn).desc));
-        } else if (opcode == Opcodes.INVOKEDYNAMIC){
+        } else if (opcode == Opcodes.INVOKEDYNAMIC) {
             InvokeDynamicInsnNode node = (InvokeDynamicInsnNode) insn;
             effects.addMethodCall(new MethodCallEffect(method, MethodRef.of(null, node.name, node.desc), new ArrayList<>(values)));
             // TODO: return value
