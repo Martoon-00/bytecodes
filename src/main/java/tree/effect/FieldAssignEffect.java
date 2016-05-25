@@ -39,4 +39,25 @@ public class FieldAssignEffect {
     public void simplify() {
         value = value.eliminateRecursion().simplify();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FieldAssignEffect that = (FieldAssignEffect) o;
+
+        if (!caller.equals(that.caller)) return false;
+        if (!field.equals(that.field)) return false;
+        return value.equals(that.value);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = caller.hashCode();
+        result = 31 * result + field.hashCode();
+        result = 31 * result + value.hashCode();
+        return result;
+    }
 }

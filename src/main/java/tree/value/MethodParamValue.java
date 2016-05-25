@@ -24,4 +24,24 @@ public class MethodParamValue extends FinalValue {
     public String toString() {
         return "MethodParamRef{ " + method + ": " + index + " }";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MethodParamValue that = (MethodParamValue) o;
+
+        if (index != that.index) return false;
+        return method.equals(that.method);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 7;
+        result = 31 * result + method.hashCode();
+        result = 31 * result + index;
+        return result;
+    }
 }

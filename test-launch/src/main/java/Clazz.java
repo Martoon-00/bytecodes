@@ -8,8 +8,8 @@ public class Clazz {
         }
     }
 
-//    private int a(int k, int s) {
-//        return k;
-//    }
+    private Clazz a(int k, int s) {
+        return this;
+    }
 
 }

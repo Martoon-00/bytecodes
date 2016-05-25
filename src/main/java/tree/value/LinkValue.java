@@ -50,7 +50,7 @@ public class LinkValue extends MyValue implements Replaceable {
 //        if (value instanceof AnyValue || value instanceof NoValue)
 //            return value;
 //        return new LinkValue(value);
-        return value;
+        return value.simplify();
     }
 
     @Override

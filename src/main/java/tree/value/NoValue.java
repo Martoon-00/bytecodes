@@ -9,4 +9,15 @@ public class NoValue extends FinalValue {
     public String toString() {
         return "<no value>";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || (o != null && getClass() == o.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return 1231456;
+    }
+
 }

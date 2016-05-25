@@ -23,6 +23,6 @@ public class MethodParamRef extends Ref {
 
     @Override
     public String show() {
-        return "MethodParamRef{ " + method + ": " + index + " }";
+        return "MethodParamValue{ " + method + ": " + index + " }";
     }
 }

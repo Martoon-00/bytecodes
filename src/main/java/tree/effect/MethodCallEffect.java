@@ -34,4 +34,25 @@ public class MethodCallEffect {
             params.set(i, params.get(i).eliminateRecursion().simplify());
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MethodCallEffect that = (MethodCallEffect) o;
+
+        if (!caller.equals(that.caller)) return false;
+        if (!callee.equals(that.callee)) return false;
+        return params.equals(that.params);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = caller.hashCode();
+        result = 31 * result + callee.hashCode();
+        result = 31 * result + params.hashCode();
+        return result;
+    }
 }

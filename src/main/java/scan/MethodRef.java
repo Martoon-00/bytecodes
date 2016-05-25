@@ -33,7 +33,7 @@ public class MethodRef {
 
     @Override
     public String toString() {
-        return clazz + "#" + name;
+        return clazz + "#" + name + desc;
     }
 
     @Override

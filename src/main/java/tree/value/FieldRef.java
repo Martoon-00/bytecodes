@@ -31,7 +31,7 @@ public class FieldRef extends FinalValue {
 
         FieldRef fieldRef = (FieldRef) o;
 
-        return owner.equals(fieldRef.owner) && name.equals(fieldRef.name);
+        return owner.equals(fieldRef.owner) && name.equals(fieldRef.name) && getType().equals(fieldRef.getType());
     }
 
     @Override

@@ -6,10 +6,10 @@ import java.util.List;
 
 public class EffectsView {
     private final MyValue returnValue;
-    private final List<tree.effect.MethodCallEffect> methodCalls;
+    private final List<MethodCallEffect> methodCalls;
     private final List<FieldAssignEffect> fieldAssigns;
 
-    EffectsView(MyValue returnValue, List<tree.effect.MethodCallEffect> methodCalls, List<FieldAssignEffect> fieldAssigns) {
+    public EffectsView(MyValue returnValue, List<MethodCallEffect> methodCalls, List<FieldAssignEffect> fieldAssigns) {
         this.returnValue = returnValue;
         this.methodCalls = methodCalls;
         this.fieldAssigns = fieldAssigns;
