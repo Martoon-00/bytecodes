@@ -32,11 +32,6 @@ public class MethodRef {
     }
 
     @Override
-    public String toString() {
-        return clazz + "#" + name + desc;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -55,5 +50,10 @@ public class MethodRef {
         result = 31 * result + name.hashCode();
         result = 31 * result + desc.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return clazz + "#" + name + desc;
     }
 }

@@ -40,7 +40,7 @@ public class FieldRef extends FinalValue {
     }
 
     public String toString() {
-        return "FieldRef{ " + owner + '#' + name + " }";
+        return owner + '#' + name;
     }
 
     //TODO: for simplify, check whether they are equal
