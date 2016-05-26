@@ -3,6 +3,7 @@ package tree.value.op;
 import org.objectweb.asm.Type;
 import scan.except.UnsupportedOpcodeException;
 import tree.value.AnyValue;
+import tree.value.ConstValue;
 import tree.value.MyValue;
 
 import java.util.Set;
@@ -62,8 +63,12 @@ public abstract class BinOpValue extends MyValue {
         MyValue b2 = b.simplify();
         if (a2 instanceof AnyValue || b2 instanceof AnyValue)
             return new AnyValue(getType());
+        if (a2 instanceof ConstValue && b2 instanceof ConstValue)
+            return evaluate(((ConstValue) a2), ((ConstValue) b2));
         return BinOpValue.of(opcode, a2, b2);
     }
+
+    protected abstract MyValue evaluate(ConstValue a, ConstValue b);
 
     @Override
     public boolean equals(Object o) {

@@ -15,6 +15,7 @@ import tree.effect.FieldAssignEffect;
 import tree.effect.MethodCallEffect;
 import tree.value.*;
 import tree.value.op.BinOpValue;
+import tree.value.op.NumBinOpValue;
 import tree.value.op.UnaryOpValue;
 
 import java.util.ArrayList;
@@ -90,10 +91,8 @@ public class LolInterpreter extends Interpreter<LinkValue> {
                 answer = new ConstValue(Type.DOUBLE_TYPE, 1.0);
                 break;
             case Opcodes.BIPUSH:
-                answer = new ConstValue(Type.BYTE_TYPE, ((IntInsnNode) insn).operand);
-                break;
             case Opcodes.SIPUSH:
-                answer = new ConstValue(Type.SHORT_TYPE, ((IntInsnNode) insn).operand);
+                answer = new ConstValue(Type.INT_TYPE, ((IntInsnNode) insn).operand);
                 break;
             case Opcodes.LDC:
                 Object cst = ((LdcInsnNode) insn).cst;
@@ -159,6 +158,9 @@ public class LolInterpreter extends Interpreter<LinkValue> {
                     FieldInsnNode getInsn = (FieldInsnNode) insn;
                     FieldRef getField = FieldRef.of(getInsn.owner, getInsn.name, Type.getObjectType(getInsn.desc));
                     return LinkValue.of(getField);
+                case Opcodes.IINC:
+                    ConstValue operand = new ConstValue(Type.INT_TYPE, ((IincInsnNode) insn).incr);
+                    return LinkValue.of(NumBinOpValue.of(Opcodes.IADD, value, operand));
                 default:
                     BasicValue delegate = interpreter.unaryOperation(insn, value);
                     return delegate == null ? null :

@@ -3,6 +3,7 @@ package tree.value.op;
 import org.objectweb.asm.Type;
 import scan.except.UnsupportedOpcodeException;
 import tree.value.AnyValue;
+import tree.value.ConstValue;
 import tree.value.MyValue;
 
 import java.util.Set;
@@ -46,6 +47,10 @@ public abstract class UnaryOpValue extends MyValue {
         MyValue a2 = a.simplify();
         if (a2 instanceof AnyValue)
             return new AnyValue(getType());
+        if (a2 instanceof ConstValue)
+            return evaluate(((ConstValue) a2));
         return UnaryOpValue.of(opcode, a2);
     }
+
+    protected abstract MyValue evaluate(ConstValue a);
 }

@@ -2,6 +2,8 @@ package tree.value.op;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import scan.except.UnsupportedOpcodeException;
+import tree.value.ConstValue;
 import tree.value.MyValue;
 
 public class NegUnaryOpValue extends UnaryOpValue {
@@ -15,6 +17,29 @@ public class NegUnaryOpValue extends UnaryOpValue {
     @Override
     public Type getType() {
         return types[opcode - startOpcode];
+    }
+
+    @Override
+    protected MyValue evaluate(ConstValue av) {
+        Object a = av.getValue();
+        Object res;
+        switch (opcode) {
+            case Opcodes.INEG:
+                res = -(int) a;
+                break;
+            case Opcodes.LNEG:
+                res = -(long) a;
+                break;
+            case Opcodes.FNEG:
+                res = -(float) a;
+                break;
+            case Opcodes.DNEG:
+                res = -(double) a;
+                break;
+            default:
+                throw new UnsupportedOpcodeException(opcode);
+        }
+        return new ConstValue(getType(), res);
     }
 
     public String toString() {

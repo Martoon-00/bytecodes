@@ -32,7 +32,7 @@ public class ControlFlow extends Analyzer<LinkValue> {
 
     @Override
     protected void newControlFlowEdge(int insn, int successor) {
-//        System.out.println(insn + " -> " + successor);
+        System.out.println(insn + " -> " + successor);
         super.newControlFlowEdge(insn, successor);
     }
 

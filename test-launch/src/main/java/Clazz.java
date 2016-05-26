@@ -2,10 +2,11 @@ public class Clazz {
     int f;
 
     public Clazz(int[] array) {
-        f = 6;
-        for (int i = 0; i < 10; i++) {
-            f = i;
+        int s = 1;
+        while (s < 5) {
+            s = 9;
         }
+        System.out.println(s);
     }
 
     private Clazz a(int k, int s) {

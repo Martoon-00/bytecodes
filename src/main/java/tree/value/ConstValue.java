@@ -33,6 +33,6 @@ public class ConstValue extends FinalValue {
 
     @Override
     public String toString() {
-        return "ConstValue{ " + value + " }";
+        return "{" + value + "}";
     }
 }
