@@ -1,10 +1,11 @@
 package tree.value;
 
+import intra.IntraContext;
 import org.objectweb.asm.Type;
 
 import java.util.Objects;
 
-public class ConstValue extends FinalValue {
+public class ConstValue extends PrimitiveValue {
     private final Object value;
 
     public ConstValue(Type type, Object value) {
@@ -15,6 +16,16 @@ public class ConstValue extends FinalValue {
 
     public Object getValue() {
         return value;
+    }
+
+    @Override
+    public MyValue resolveReferences(IntraContext context, int depth) {
+        return this;
+    }
+
+    @Override
+    public MyValue eliminateReferences() {
+        return this;
     }
 
     @Override

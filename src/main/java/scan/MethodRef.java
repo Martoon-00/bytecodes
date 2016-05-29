@@ -1,5 +1,7 @@
 package scan;
 
+import org.objectweb.asm.Type;
+
 import javax.annotation.Nullable;
 
 public class MethodRef {
@@ -29,6 +31,10 @@ public class MethodRef {
 
     public String getDesc() {
         return desc;
+    }
+
+    public int getParamNum() {
+        return Type.getArgumentTypes(desc).length;
     }
 
     @Override

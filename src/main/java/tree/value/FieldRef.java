@@ -1,10 +1,11 @@
 package tree.value;
 
+import intra.IntraContext;
 import org.objectweb.asm.Type;
 
 import java.util.Objects;
 
-public class FieldRef extends FinalValue {
+public class FieldRef extends PrimitiveValue {
     private final String owner;
     private final String name;
 
@@ -22,6 +23,16 @@ public class FieldRef extends FinalValue {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public MyValue resolveReferences(IntraContext context, int depth) {
+        return this;
+    }
+
+    @Override
+    public MyValue eliminateReferences() {
+        return this;
     }
 
     @Override

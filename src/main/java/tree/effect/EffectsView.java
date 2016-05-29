@@ -1,8 +1,11 @@
 package tree.effect;
 
+import tree.value.AltValue;
 import tree.value.MyValue;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EffectsView {
     private final MyValue returnValue;
@@ -25,6 +28,22 @@ public class EffectsView {
 
     public List<FieldAssignEffect> getFieldAssigns() {
         return fieldAssigns;
+    }
+
+    public static EffectsView merge(Collection<EffectsView> effects) {
+        return new EffectsView(
+                AltValue.of(effects.stream()
+                        .map(EffectsView::getReturnValue)
+                        .toArray(MyValue[]::new)),
+                effects.stream()
+                        .map(EffectsView::getMethodCalls)
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList()),
+                effects.stream()
+                        .map(EffectsView::getFieldAssigns)
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList())
+        );
     }
 
     public void print() {

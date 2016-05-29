@@ -1,5 +1,6 @@
 package tree.value;
 
+import intra.IntraContext;
 import org.objectweb.asm.Type;
 
 import java.util.HashSet;
@@ -63,11 +64,31 @@ public class AltValue extends MyValue {
     }
 
     @Override
+    public MyValue resolveReferences(IntraContext context, int depth) {
+        return AltValue.of(alternatives.stream()
+                .map(v -> v.resolveReferences(context, depth))
+                .toArray(MyValue[]::new));
+    }
+
+    @Override
+    public MyValue eliminateReferences() {
+        return AltValue.of(alternatives.stream()
+                .map(MyValue::eliminateReferences)
+                .toArray(MyValue[]::new));
+    }
+
+    @Override
+    public MyValue copy() {
+        return new AltValue(getType(), alternatives);
+    }
+
+    @Override
     public String toString() {
         if (alternatives.isEmpty())
             return "<no alt>";
-        return alternatives.stream()
+        String res = alternatives.stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(" | "));
+        return "(" + res + ")";
     }
 }

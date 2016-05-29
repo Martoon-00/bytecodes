@@ -3,10 +3,9 @@ package tree.value;
 import intra.IntraContext;
 import org.objectweb.asm.Type;
 
-public class NullValue extends PrimitiveValue {
-
-    public NullValue(Type type) {
-        super(type);
+public class ThisValue extends PrimitiveValue {
+    public ThisValue() {
+        super(Type.getObjectType("java/lang/Object"));
     }
 
     @Override
@@ -20,7 +19,17 @@ public class NullValue extends PrimitiveValue {
     }
 
     @Override
+    public boolean equals(Object value) {
+        return value instanceof ThisValue;
+    }
+
+    @Override
+    public int hashCode() {
+        return 345237654;
+    }
+
+    @Override
     public String toString() {
-        return "<null>";
+        return "<this>";
     }
 }

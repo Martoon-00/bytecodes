@@ -11,6 +11,7 @@ import scan.MethodRef;
 import tree.effect.EffectsView;
 import tree.value.LinkValue;
 import tree.value.MethodParamValue;
+import tree.value.ThisValue;
 
 public class ControlFlow extends Analyzer<LinkValue> {
     private final LolInterpreter interpreter;
@@ -32,7 +33,7 @@ public class ControlFlow extends Analyzer<LinkValue> {
 
     @Override
     protected void newControlFlowEdge(int insn, int successor) {
-        System.out.println(insn + " -> " + successor);
+//        System.out.println(insn + " -> " + successor);
         super.newControlFlowEdge(insn, successor);
     }
 
@@ -55,10 +56,14 @@ public class ControlFlow extends Analyzer<LinkValue> {
 
         MethodRef method = interpreter.getMethod();
         Type[] argTypes = Type.getArgumentTypes(method.getDesc());
-        int argNum = ((m.access & Opcodes.ACC_STATIC) == 0 ? 1 : 0) + argTypes.length;
+        boolean isStatic = (m.access & Opcodes.ACC_STATIC) != 0;
+        int argNum = (isStatic ? 0 : 1) + argTypes.length;
         for (int i = 0; i < argNum; i++) {
             int finalI = i;
-            initFrame.getLocal(i).replaceEntry(v -> new MethodParamValue(method, finalI, v.getType()));
+            initFrame.getLocal(i).replaceEntry(
+                    v -> !isStatic && finalI == 0
+                            ? new ThisValue()
+                            : new MethodParamValue(method, finalI, v.getType()));
         }
         return results;
     }

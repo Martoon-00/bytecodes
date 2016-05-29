@@ -4,8 +4,8 @@ import org.objectweb.asm.Type;
 
 import java.util.Set;
 
-public abstract class FinalValue extends MyValue {
-    public FinalValue(Type type) {
+public abstract class PrimitiveValue extends MyValue {
+    public PrimitiveValue(Type type) {
         super(type);
     }
 
@@ -16,6 +16,11 @@ public abstract class FinalValue extends MyValue {
 
     @Override
     public MyValue simplify() {
+        return this;
+    }
+
+    @Override
+    public MyValue copy() {
         return this;
     }
 }

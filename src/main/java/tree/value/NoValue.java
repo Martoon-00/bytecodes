@@ -1,8 +1,20 @@
 package tree.value;
 
-public class NoValue extends FinalValue {
+import intra.IntraContext;
+
+public class NoValue extends PrimitiveValue {
     public NoValue() {
         super(null);
+    }
+
+    @Override
+    public MyValue resolveReferences(IntraContext context, int depth) {
+        return this;
+    }
+
+    @Override
+    public MyValue eliminateReferences() {
+        return this;
     }
 
     @Override

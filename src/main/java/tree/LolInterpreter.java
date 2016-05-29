@@ -23,7 +23,12 @@ import java.util.List;
 
 public class LolInterpreter extends Interpreter<LinkValue> {
 
-    private final BasicInterpreter interpreter = new BasicInterpreter();
+    private final BasicInterpreter interpreter = new BasicInterpreter(){
+        @Override
+        public BasicValue newValue(Type type) {
+            return LolInterpreter.this.newValue(type);
+        }
+    };
 
     private final MethodRef method;
     private final EffectsCollector effects;
@@ -31,13 +36,14 @@ public class LolInterpreter extends Interpreter<LinkValue> {
     public LolInterpreter(MethodRef method) {
         super(Opcodes.ASM4);
         this.method = method;
-        effects = new EffectsCollector(method);
+        effects = new EffectsCollector();
     }
 
     @Override
     public LinkValue newValue(Type type) {
         MyValue v = type == null ? new NoValue()
-                : MyBasicValue.of(interpreter.newValue(type));
+                : type.equals(Type.VOID_TYPE) ? null
+                : MyBasicValue.of(new BasicValue(type));
         return LinkValue.of(v);
     }
 
@@ -161,6 +167,8 @@ public class LolInterpreter extends Interpreter<LinkValue> {
                 case Opcodes.IINC:
                     ConstValue operand = new ConstValue(Type.INT_TYPE, ((IincInsnNode) insn).incr);
                     return LinkValue.of(NumBinOpValue.of(Opcodes.IADD, value, operand));
+                case Opcodes.CHECKCAST:
+                    return value;
                 default:
                     BasicValue delegate = interpreter.unaryOperation(insn, value);
                     return delegate == null ? null :

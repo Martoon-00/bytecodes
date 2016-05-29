@@ -1,5 +1,6 @@
 package tree.value.op;
 
+import intra.IntraContext;
 import org.objectweb.asm.Type;
 import scan.except.UnsupportedOpcodeException;
 import tree.value.AnyValue;
@@ -53,4 +54,19 @@ public abstract class UnaryOpValue extends MyValue {
     }
 
     protected abstract MyValue evaluate(ConstValue a);
+
+    @Override
+    public MyValue resolveReferences(IntraContext context, int depth) {
+        return UnaryOpValue.of(opcode, a.resolveReferences(context, depth));
+    }
+
+    @Override
+    public MyValue eliminateReferences() {
+        return UnaryOpValue.of(opcode, a.eliminateReferences());
+    }
+
+    @Override
+    public MyValue copy() {
+        return UnaryOpValue.of(opcode, a.copy());
+    }
 }

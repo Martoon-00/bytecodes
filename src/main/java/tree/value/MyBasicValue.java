@@ -1,49 +1,31 @@
 package tree.value;
 
-import com.sun.istack.internal.NotNull;
+import intra.IntraContext;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.analysis.BasicValue;
 
 import java.util.Set;
 
 public class MyBasicValue extends MyValue {
-    @NotNull
-    private final BasicValue value;
-
-    private MyBasicValue(@NotNull BasicValue value) {
-        // TODO: composition -> inheritance?
-        super(null);
-        this.value = value;
+    private MyBasicValue(Type type) {
+        super(type);
     }
 
     public static MyBasicValue of(BasicValue value) {
         if (value == null)
             return null;
-        return new MyBasicValue(value);
-    }
-
-    @Override
-    public Type getType() {
-        return value.getType();
-    }
-
-    @Override
-    public int getSize() {
-        return value.getSize();
-    }
-
-    @Override
-    public boolean isReference() {
-        return value.isReference();
+        if (value instanceof MyValue)
+            throw new IllegalStateException("Alolol");
+        return new MyBasicValue(value.getType());
     }
 
     @Override
     protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
-        if (value instanceof MyValue) {
-            return ((MyValue) value).eliminateRecursion(visited, complicated);
-        } else {
+//        if (value instanceof MyValue) {
+//            return ((MyValue) value).eliminateRecursion(visited, complicated);
+//        } else {
             return this;
-        }
+//        }
     }
 
     @Override
@@ -52,7 +34,22 @@ public class MyBasicValue extends MyValue {
     }
 
     @Override
+    public MyValue resolveReferences(IntraContext context, int depth) {
+        return this;
+    }
+
+    @Override
+    public MyValue eliminateReferences() {
+        return this;
+    }
+
+    @Override
+    public MyValue copy() {
+        return new MyBasicValue(getType());
+    }
+
+    @Override
     public String toString() {
-        return value.toString();
+        return new BasicValue(getType()).toString();
     }
 }

@@ -1,5 +1,6 @@
 package tree.value;
 
+import intra.IntraContext;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import scan.except.InvalidBytecodeException;
@@ -12,6 +13,17 @@ public abstract class MyValue extends BasicValue {
         super(type);
     }
 
+    public int getSize() {
+        Type type = getType();
+        return type == Type.LONG_TYPE || type == Type.DOUBLE_TYPE ? 2 : 1;
+    }
+
+    public boolean isReference() {
+        Type type = getType();
+        return type != null
+                && (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY);
+    }
+
     /**
      * Whether it is recursive value and nether can be fully counted
      *
@@ -22,7 +34,7 @@ public abstract class MyValue extends BasicValue {
      */
     protected abstract MyValue proceedElimRec(Set<MyValue> visited, boolean complicated);
 
-    public MyValue eliminateRecursion(Set<MyValue> visited, boolean complicated) {
+    public final MyValue eliminateRecursion(Set<MyValue> visited, boolean complicated) {
         boolean added = visited.add(this);
         if (!added) {
             return complicated ? new AnyValue(getType()) : new NoValue();
@@ -42,20 +54,19 @@ public abstract class MyValue extends BasicValue {
     public static void assertSameType(MyValue v1, MyValue v2) {
         Type t1 = v1.getType();
         Type t2 = v2.getType();
-        if (t1 != null && t2 != null && !t1.equals(t2))
+        if (t1 == null || t2 == null)
+            return;
+        if (t1.toString().endsWith(";") && t2.toString().endsWith(";"))
+            return;
+        if (!t1.equals(t2))
             throw new InvalidBytecodeException(String.format("Alternatives with different types: %s vs %s", t1, t2));
     }
 
-    public int getSize() {
-        Type type = getType();
-        return type == Type.LONG_TYPE || type == Type.DOUBLE_TYPE ? 2 : 1;
-    }
+    public abstract MyValue resolveReferences(IntraContext context, int depth);
 
-    public boolean isReference() {
-        Type type = getType();
-        return type != null
-                && (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY);
-    }
+    public abstract MyValue eliminateReferences();
+
+    public abstract MyValue copy();
 
     @Override
     public boolean equals(Object value) {
