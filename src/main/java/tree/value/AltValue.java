@@ -37,6 +37,10 @@ public class AltValue extends MyValue {
         return new AltValue(single.getType(), alternatives);
     }
 
+    public Stream<MyValue> getAlternatives() {
+        return alternatives.stream();
+    }
+
     @Override
     protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
         Set<MyValue> res = alternatives.stream()
@@ -80,6 +84,11 @@ public class AltValue extends MyValue {
     @Override
     public MyValue copy() {
         return new AltValue(getType(), alternatives);
+    }
+
+    public static boolean isConstSet(MyValue value) {
+        return value instanceof AltValue
+                && ((AltValue) value).getAlternatives().allMatch(v -> v instanceof ConstValue);
     }
 
     @Override

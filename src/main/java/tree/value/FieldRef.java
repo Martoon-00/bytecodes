@@ -2,15 +2,16 @@ package tree.value;
 
 import intra.IntraContext;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.analysis.BasicValue;
 
 import java.util.Objects;
 
-public class FieldRef extends PrimitiveValue {
+public class FieldRef extends ResolvableValue {
     private final String owner;
     private final String name;
 
     private FieldRef(String owner, String name, Type type) {
-        super(type);
+        super(MyBasicValue.of(new BasicValue(type)));
         Objects.requireNonNull(name);
         Objects.requireNonNull(type);
         this.owner = owner;
@@ -26,13 +27,13 @@ public class FieldRef extends PrimitiveValue {
     }
 
     @Override
-    public MyValue resolveReferences(IntraContext context, int depth) {
-        return this;
+    protected MyValue resolveUnresolved(IntraContext context, int depth) {
+        return context.getFieldValues(this);
     }
 
     @Override
-    public MyValue eliminateReferences() {
-        return this;
+    protected MyValue copyUnresolved() {
+        return new FieldRef(owner, name, getType());
     }
 
     @Override
@@ -51,7 +52,8 @@ public class FieldRef extends PrimitiveValue {
     }
 
     public String toString() {
-        return owner + '#' + name;
+        String maybeValue = resolved ? ": " + getValue().toString() : "";
+        return owner + '#' + name + maybeValue;
     }
 
     //TODO: for simplify, check whether they are equal

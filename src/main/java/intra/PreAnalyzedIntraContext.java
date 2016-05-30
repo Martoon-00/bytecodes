@@ -4,7 +4,9 @@ import scan.MethodRef;
 import tree.effect.EffectsView;
 import tree.effect.FieldAssignEffect;
 import tree.effect.MethodCallEffect;
+import tree.value.AltValue;
 import tree.value.FieldRef;
+import tree.value.MyValue;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,11 +29,12 @@ public class PreAnalyzedIntraContext implements IntraContext {
     }
 
     @Override
-    public List<FieldAssignEffect> getFieldAssignEffects(FieldRef field) {
-        return effects.stream()
+    public MyValue getFieldValues(FieldRef field) {
+        return AltValue.of(effects.stream()
                 .map(EffectsView::getFieldAssigns)
                 .flatMap(List::stream)
                 .filter(fieldAssignEffect -> fieldAssignEffect.getField().equals(field))
-                .collect(Collectors.toList());
+                .map(FieldAssignEffect::getValue)
+                .toArray(MyValue[]::new));
     }
 }

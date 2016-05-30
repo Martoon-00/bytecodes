@@ -64,6 +64,14 @@ public class LinkValue extends MyValue implements Replaceable {
         throw new UnsupportedOperationException();
     }
 
+    public static boolean sameValue(MyValue v1, MyValue v2) {
+        for (MyValue v = v1; v instanceof LinkValue; v = ((LinkValue) v).getValue())
+            if (v == v2) return true;
+        for (MyValue v = v2; v instanceof LinkValue; v = ((LinkValue) v).getValue())
+            if (v == v1) return true;
+        return false;
+    }
+
     @Override
     public String toString() {
         return "^" + value;

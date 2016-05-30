@@ -47,7 +47,11 @@ public class LolFrame extends Frame<LinkValue> {
 
     private void merge(LinkValue v, LinkValue w) {
         // for case of same links
-        if (v == w)
+//        if (v == w)
+//            return;
+        // FIXME: this would break link system if some values would be same even when derive from different sources
+        // FIXME: (like NoValue.val instead of new NoValue())
+        if (LinkValue.sameValue(v, w))
             return;
         v.replaceEntry(x -> LinkValue.of(AltValue.of(x, w)));
     }
@@ -55,7 +59,8 @@ public class LolFrame extends Frame<LinkValue> {
     @Override
     public boolean merge(Frame<? extends LinkValue> frame, boolean[] access) {
         // TODO:
-        return super.merge(frame, access);
+        throw new UnsupportedOperationException();
+//        return super.merge(frame, access);
     }
 
 }

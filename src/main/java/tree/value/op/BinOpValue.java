@@ -3,6 +3,7 @@ package tree.value.op;
 import intra.IntraContext;
 import org.objectweb.asm.Type;
 import scan.except.UnsupportedOpcodeException;
+import tree.value.AltValue;
 import tree.value.AnyValue;
 import tree.value.ConstValue;
 import tree.value.MyValue;
@@ -66,6 +67,24 @@ public abstract class BinOpValue extends MyValue {
             return new AnyValue(getType());
         if (a2 instanceof ConstValue && b2 instanceof ConstValue)
             return evaluate(((ConstValue) a2), ((ConstValue) b2));
+
+        boolean ad = AltValue.isConstSet(a2);
+        boolean bd = AltValue.isConstSet(b2);
+        if (ad && bd) {
+            return AltValue.of(((AltValue) a2).getAlternatives().flatMap(av ->
+                    ((AltValue) b2).getAlternatives().map(bv -> evaluate(((ConstValue) av), (ConstValue) bv))
+            ).toArray(MyValue[]::new));
+        }
+        if (ad) {
+            return AltValue.of(((AltValue) a2).getAlternatives()
+                    .map(av -> evaluate(((ConstValue) av), ((ConstValue) b2)))
+                    .toArray(MyValue[]::new));
+        }
+        if (bd) {
+            return AltValue.of(((AltValue) b2).getAlternatives()
+                    .map(bv -> evaluate(((ConstValue) bv), ((ConstValue) a2)))
+                    .toArray(MyValue[]::new));
+        }
         return BinOpValue.of(opcode, a2, b2);
     }
 

@@ -4,10 +4,7 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
-import org.objectweb.asm.tree.analysis.AnalyzerException;
-import org.objectweb.asm.tree.analysis.BasicInterpreter;
-import org.objectweb.asm.tree.analysis.BasicValue;
-import org.objectweb.asm.tree.analysis.Interpreter;
+import org.objectweb.asm.tree.analysis.*;
 import scan.MethodRef;
 import scan.except.UnsupportedOpcodeException;
 import tree.effect.EffectsCollector;
@@ -23,7 +20,7 @@ import java.util.List;
 
 public class LolInterpreter extends Interpreter<LinkValue> {
 
-    private final BasicInterpreter interpreter = new BasicInterpreter(){
+    private final BasicInterpreter interpreter = new BasicInterpreter() {
         @Override
         public BasicValue newValue(Type type) {
             return LolInterpreter.this.newValue(type);
@@ -154,27 +151,25 @@ public class LolInterpreter extends Interpreter<LinkValue> {
 
         if (UnaryOpValue.isUnaryOp(opcode))
             return LinkValue.of(UnaryOpValue.of(opcode, value));
-        else {
-            switch (opcode) {
-                case Opcodes.PUTSTATIC:
-                    FieldInsnNode putInsn = (FieldInsnNode) insn;
-                    FieldRef putField = FieldRef.of(putInsn.owner, putInsn.name, Type.getObjectType(putInsn.desc));
-                    effects.addFieldAssign(FieldAssignEffect.of(method, putField, value));
-                case Opcodes.GETFIELD:
-                    FieldInsnNode getInsn = (FieldInsnNode) insn;
-                    FieldRef getField = FieldRef.of(getInsn.owner, getInsn.name, Type.getObjectType(getInsn.desc));
-                    return LinkValue.of(getField);
-                case Opcodes.IINC:
-                    ConstValue operand = new ConstValue(Type.INT_TYPE, ((IincInsnNode) insn).incr);
-                    return LinkValue.of(NumBinOpValue.of(Opcodes.IADD, value, operand));
-                case Opcodes.CHECKCAST:
-                    return value;
-                default:
-                    BasicValue delegate = interpreter.unaryOperation(insn, value);
-                    return delegate == null ? null :
-                            LinkValue.of(new AnyValue(delegate.getType()));
 
-            }
+        switch (opcode) {
+            case Opcodes.PUTSTATIC:
+                FieldInsnNode putInsn = (FieldInsnNode) insn;
+                FieldRef putField = FieldRef.of(putInsn.owner, putInsn.name, Type.getObjectType(putInsn.desc));
+                effects.addFieldAssign(FieldAssignEffect.of(method, putField, value));
+            case Opcodes.GETFIELD:
+                FieldInsnNode getInsn = (FieldInsnNode) insn;
+                FieldRef getField = FieldRef.of(getInsn.owner, getInsn.name, Type.getObjectType(getInsn.desc));
+                return LinkValue.of(getField);
+            case Opcodes.IINC:
+                ConstValue operand = new ConstValue(Type.INT_TYPE, ((IincInsnNode) insn).incr);
+                return LinkValue.of(NumBinOpValue.of(Opcodes.IADD, value, operand));
+            case Opcodes.CHECKCAST:
+                return value;
+            default:
+                BasicValue delegate = interpreter.unaryOperation(insn, value);
+                return delegate == null ? null :
+                        LinkValue.of(new AnyValue(delegate.getType()));
         }
     }
 
@@ -197,8 +192,8 @@ public class LolInterpreter extends Interpreter<LinkValue> {
     }
 
     @Override
-    public LinkValue ternaryOperation(AbstractInsnNode insn, LinkValue value1, LinkValue value2, LinkValue
-            value3) throws AnalyzerException {
+    public LinkValue ternaryOperation(AbstractInsnNode insn, LinkValue value1, LinkValue value2, LinkValue value3)
+            throws AnalyzerException {
         return LinkValue.of(MyBasicValue.of(interpreter.ternaryOperation(insn, value1, value2, value3)));
     }
 

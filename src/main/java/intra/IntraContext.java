@@ -1,14 +1,14 @@
 package intra;
 
 import scan.MethodRef;
-import tree.effect.FieldAssignEffect;
 import tree.effect.MethodCallEffect;
 import tree.value.FieldRef;
+import tree.value.MyValue;
 
 import java.util.List;
 
 public interface IntraContext {
     List<MethodCallEffect> getCallEffects(MethodRef methodRef);
 
-    List<FieldAssignEffect> getFieldAssignEffects(FieldRef field);
+    MyValue getFieldValues(FieldRef field);
 }

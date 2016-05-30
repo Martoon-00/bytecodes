@@ -8,12 +8,10 @@ import tree.effect.MethodCallEffect;
 import tree.exc.AnalyzerRuntimeException;
 
 import java.util.List;
-import java.util.Set;
 
-public class MethodParamValue extends LinkValue {
+public class MethodParamValue extends ResolvableValue {
     private final MethodRef method;
     private final int index;
-    private boolean resolved;
 
     public MethodParamValue(MethodRef method, int index, Type type) {
         super(MyBasicValue.of(new BasicValue(type)));
@@ -29,18 +27,12 @@ public class MethodParamValue extends LinkValue {
         return index;
     }
 
-    @Override
-    public MyValue resolveReferences(IntraContext context, int depth) {
-        if (!resolved) {  // if already resolved, we can be in recursion
-            resolved = true;
-            MyValue[] values = context.getCallEffects(method).stream()
-                    .map(this::getParamFromEffect)
-                    .map(MyValue::copy)
-                    .map(param -> depth == 0 ? param : param.resolveReferences(context, depth - 1))
-                    .toArray(MyValue[]::new);
-            replaceEntry(was -> LinkValue.of(AltValue.of(values)));
-        }
-        return this;
+    protected MyValue resolveUnresolved(IntraContext context, int depth) {
+        return AltValue.of(context.getCallEffects(method).stream()
+                .map(this::getParamFromEffect)
+                .map(MyValue::copy)
+                .map(param -> depth == 0 ? param : param.resolveReferences(context, depth - 1))
+                .toArray(MyValue[]::new));
     }
 
     private MyValue getParamFromEffect(MethodCallEffect effect) {
@@ -52,25 +44,7 @@ public class MethodParamValue extends LinkValue {
         return params.get(index);
     }
 
-    @Override
-    protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
-        return resolved ? super.proceedElimRec(visited, complicated) : this;
-    }
-
-    @Override
-    public MyValue simplify() {
-        return resolved ? super.simplify() : this;
-    }
-
-    @Override
-    public MyValue eliminateReferences() {
-        return resolved ? getValue().eliminateReferences() : new AnyValue(getType());
-    }
-
-    @Override
-    public MyValue copy() {
-        if (resolved)
-            throw new IllegalStateException("Already resolved");
+    protected MyValue copyUnresolved() {
         return new MethodParamValue(method, index, getType());
     }
 

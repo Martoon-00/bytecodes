@@ -1,26 +1,20 @@
 public class Clazz {
     int f;
 
-    public static void main(String[] args) {
-        new Clazz().a(2);
+//    public static void main(String[] args) {
+//        a(2);
+//    }
+
+    public static int lol(int a) {
+        return 5;
     }
 
-    public int lol(int a, int b, Integer s) {
-        return qwe(b, a, 999);
-    }
-
-    public int qwe(int a, int b, int c) {
-        return lol(a, b, 3);
-    }
-
-    private int a(int p) {
+    private static int a(int p) {
         int s = 1;
-        while (s < 5) {
-            s = 9;
+        for (int i = 0; i < 10; i++) {
+            s ++;
         }
-        System.out.println(s);
-        int r = lol(1, 1, null);
-        return r;
+        return lol(s);
     }
 
 }
