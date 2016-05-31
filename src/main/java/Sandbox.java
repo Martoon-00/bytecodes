@@ -28,7 +28,7 @@ public class Sandbox {
         String clazz = args[1];
         String methodName = args[2];
         int depth = Integer.parseInt(args[3]);
-        boolean remainReferences = args.length >= 4 && Boolean.parseBoolean(args[4]);
+        boolean remainReferences = args.length > 4 && Boolean.parseBoolean(args[4]);
 
         performAnalysis(classPath, clazz, methodName, depth, remainReferences);
 
