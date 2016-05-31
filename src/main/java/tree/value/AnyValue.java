@@ -4,8 +4,12 @@ import intra.IntraContext;
 import org.objectweb.asm.Type;
 
 public class AnyValue extends PrimitiveValue {
-    public AnyValue(Type type) {
+    private AnyValue(Type type) {
         super(type);
+    }
+
+    public static AnyValue of(Type type) {
+        return type == null ? null : new AnyValue(type);
     }
 
     @Override

@@ -40,7 +40,7 @@ public class LolInterpreter extends Interpreter<LinkValue> {
     public LinkValue newValue(Type type) {
         MyValue v = type == null ? new NoValue()
                 : type.equals(Type.VOID_TYPE) ? null
-                : MyBasicValue.of(new BasicValue(type));
+                : AnyValue.of(type);
         return LinkValue.of(v);
     }
 
@@ -112,27 +112,27 @@ public class LolInterpreter extends Interpreter<LinkValue> {
                 } else if (cst instanceof Type) {
                     int sort = ((Type) cst).getSort();
                     if (sort == Type.OBJECT || sort == Type.ARRAY) {
-                        answer = new AnyValue(Type.getObjectType("java/lang/Class"));
+                        answer = AnyValue.of((Type.getObjectType("java/lang/Class")));
                     } else if (sort == Type.METHOD) {
-                        answer = new AnyValue(Type.getObjectType("java/lang/invoke/MethodType"));
+                        answer = AnyValue.of((Type.getObjectType("java/lang/invoke/MethodType")));
                     } else {
                         throw new IllegalArgumentException("Illegal LDC constant " + cst);
                     }
                 } else if (cst instanceof Handle) {
-                    answer = new AnyValue(Type.getObjectType("java/lang/invoke/MethodHandle"));
+                    answer = AnyValue.of(Type.getObjectType("java/lang/invoke/MethodHandle"));
                 } else {
                     throw new IllegalArgumentException("Illegal LDC constant " + cst);
                 }
                 break;
             case Opcodes.JSR:
-                answer = MyBasicValue.of(BasicValue.RETURNADDRESS_VALUE);
+                answer = AnyValue.of(BasicValue.RETURNADDRESS_VALUE.getType());
                 break;
             case Opcodes.GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
                 answer = FieldRef.of(fieldInsn.owner, fieldInsn.name, Type.getObjectType(fieldInsn.desc));
                 break;
             case Opcodes.NEW:
-                answer = new AnyValue(Type.getObjectType(((TypeInsnNode) insn).desc));
+                answer = AnyValue.of((Type.getObjectType(((TypeInsnNode) insn).desc)));
                 break;
             default:
                 throw new UnsupportedOpcodeException(insn.getOpcode());
@@ -169,7 +169,7 @@ public class LolInterpreter extends Interpreter<LinkValue> {
             default:
                 BasicValue delegate = interpreter.unaryOperation(insn, value);
                 return delegate == null ? null :
-                        LinkValue.of(new AnyValue(delegate.getType()));
+                        LinkValue.of(AnyValue.of((delegate.getType())));
         }
     }
 
@@ -184,7 +184,7 @@ public class LolInterpreter extends Interpreter<LinkValue> {
             effects.addFieldAssign(FieldAssignEffect.of(method, field, value2));
             res = null;
         } else if (opcode >= 46 && opcode < 54) {  // load from array
-            res = new AnyValue(interpreter.binaryOperation(insn, value1, value2).getType());
+            res = AnyValue.of((interpreter.binaryOperation(insn, value1, value2).getType()));
         } else {
             res = BinOpValue.of(opcode, value1, value2);
         }
@@ -194,7 +194,7 @@ public class LolInterpreter extends Interpreter<LinkValue> {
     @Override
     public LinkValue ternaryOperation(AbstractInsnNode insn, LinkValue value1, LinkValue value2, LinkValue value3)
             throws AnalyzerException {
-        return LinkValue.of(MyBasicValue.of(interpreter.ternaryOperation(insn, value1, value2, value3)));
+        return LinkValue.of(AnyValue.of((interpreter.ternaryOperation(insn, value1, value2, value3).getType())));
     }
 
     @Override

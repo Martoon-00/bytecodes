@@ -57,11 +57,11 @@ public class AltValue extends MyValue {
                 .flatMap(v -> v instanceof AltValue ? ((AltValue) v).alternatives.stream() : Stream.of(v))
                 .collect(Collectors.toSet());
         if (alts.stream().anyMatch(v -> v instanceof AnyValue))
-            return new AnyValue(getType());
+            return AnyValue.of(getType());
 
         for (MyValue alt : alts) {
             if (alt instanceof AnyValue) {
-                return new AnyValue(getType());
+                return AnyValue.of(getType());
             }
         }
         return new AltValue(getType(), alts);

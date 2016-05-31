@@ -5,16 +5,16 @@ public class Clazz {
 //        a(2);
 //    }
 
-    public static int lol(int a) {
+    public static int myMethod(Integer a) {
         return 5;
     }
 
     private static int a(int p) {
         int s = 1;
         for (int i = 0; i < 10; i++) {
-            s ++;
+            s = 2;
         }
-        return lol(s);
+        return myMethod(s);
     }
 
 }

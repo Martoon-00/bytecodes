@@ -44,7 +44,7 @@ public class MethodRef {
 
         MethodRef methodRef = (MethodRef) o;
 
-        if (!clazz.equals(methodRef.clazz)) return false;
+        if (clazz != null ? !clazz.equals(methodRef.clazz) : methodRef.clazz != null) return false;
         if (!name.equals(methodRef.name)) return false;
         return desc.equals(methodRef.desc);
 
@@ -52,7 +52,7 @@ public class MethodRef {
 
     @Override
     public int hashCode() {
-        int result = clazz.hashCode();
+        int result = clazz != null ? clazz.hashCode() : 0;
         result = 31 * result + name.hashCode();
         result = 31 * result + desc.hashCode();
         return result;
@@ -60,6 +60,6 @@ public class MethodRef {
 
     @Override
     public String toString() {
-        return clazz + "#" + name + desc;
+        return (clazz == null ? "?" : clazz) + "#" + name + desc;
     }
 }

@@ -2,7 +2,6 @@ package tree.value;
 
 import intra.IntraContext;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.analysis.BasicValue;
 
 import java.util.Objects;
 
@@ -11,7 +10,7 @@ public class FieldRef extends ResolvableValue {
     private final String name;
 
     private FieldRef(String owner, String name, Type type) {
-        super(MyBasicValue.of(new BasicValue(type)));
+        super(type);
         Objects.requireNonNull(name);
         Objects.requireNonNull(type);
         this.owner = owner;

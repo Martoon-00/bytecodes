@@ -11,13 +11,13 @@ public class MyBasicValue extends MyValue {
         super(type);
     }
 
-    public static MyBasicValue of(BasicValue value) {
-        if (value == null)
-            return null;
-        if (value instanceof MyValue)
-            throw new IllegalStateException("Alolol");
-        return new MyBasicValue(value.getType());
-    }
+//    public static MyBasicValue of(BasicValue value) {
+//        if (value == null)
+//            return null;
+//        if (value instanceof MyValue)
+//            throw new IllegalStateException("Alolol");
+//        return new MyBasicValue(value.getType());
+//    }
 
     @Override
     protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {

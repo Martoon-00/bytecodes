@@ -64,7 +64,7 @@ public abstract class BinOpValue extends MyValue {
         MyValue a2 = a.simplify();
         MyValue b2 = b.simplify();
         if (a2 instanceof AnyValue || b2 instanceof AnyValue)
-            return new AnyValue(getType());
+            return AnyValue.of(getType());
         if (a2 instanceof ConstValue && b2 instanceof ConstValue)
             return evaluate(((ConstValue) a2), ((ConstValue) b2));
 

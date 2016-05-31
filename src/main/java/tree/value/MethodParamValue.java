@@ -2,7 +2,6 @@ package tree.value;
 
 import intra.IntraContext;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.analysis.BasicValue;
 import scan.MethodRef;
 import tree.effect.MethodCallEffect;
 import tree.exc.AnalyzerRuntimeException;
@@ -14,7 +13,7 @@ public class MethodParamValue extends ResolvableValue {
     private final int index;
 
     public MethodParamValue(MethodRef method, int index, Type type) {
-        super(MyBasicValue.of(new BasicValue(type)));
+        super(type);
         this.method = method;
         this.index = index;
     }

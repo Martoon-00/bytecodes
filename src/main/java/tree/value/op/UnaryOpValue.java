@@ -47,7 +47,7 @@ public abstract class UnaryOpValue extends MyValue {
     public MyValue simplify() {
         MyValue a2 = a.simplify();
         if (a2 instanceof AnyValue)
-            return new AnyValue(getType());
+            return AnyValue.of(getType());
         if (a2 instanceof ConstValue)
             return evaluate(((ConstValue) a2));
         return UnaryOpValue.of(opcode, a2);

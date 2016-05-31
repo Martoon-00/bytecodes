@@ -2,14 +2,15 @@ package tree.value;
 
 import com.sun.istack.internal.NotNull;
 import intra.IntraContext;
+import org.objectweb.asm.Type;
 
 import java.util.Set;
 
 public abstract class ResolvableValue extends LinkValue {
     protected boolean resolved;
 
-    protected ResolvableValue(@NotNull MyValue value) {
-        super(value);
+    protected ResolvableValue(@NotNull Type type) {
+        super(AnyValue.of(type));
     }
 
     @Override
@@ -45,7 +46,7 @@ public abstract class ResolvableValue extends LinkValue {
 
     @Override
     public MyValue eliminateReferences() {
-        return resolved ? getValue().eliminateReferences() : new AnyValue(getType());
+        return resolved ? getValue().eliminateReferences() : AnyValue.of(getType());
     }
 
 }

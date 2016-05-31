@@ -37,7 +37,7 @@ public abstract class MyValue extends BasicValue {
     public final MyValue eliminateRecursion(Set<MyValue> visited, boolean complicated) {
         boolean added = visited.add(this);
         if (!added) {
-            return complicated ? new AnyValue(getType()) : new NoValue();
+            return complicated ? AnyValue.of(getType()) : new NoValue();
         } else {
             MyValue res = proceedElimRec(visited, complicated);
             visited.remove(this);
