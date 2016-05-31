@@ -75,6 +75,6 @@ public class Sandbox {
         System.out.println("3. Method name to which parameters values should be found");
         System.out.println("4. Depth of scanning (how deep reference resolution should follow)");
         System.out.println("5. [optional] Whether to remain references to fields and method parameters (default - \"false\")");
-        System.out.println("Example of usage: java Sandbox.class test-launch/target/classes Clazz myMethod 3 false");
+        System.out.println("Example of usage: java Sandbox.class target/classes Clazz myMethod 3 false");
     }
 }

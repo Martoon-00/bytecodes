@@ -17,18 +17,20 @@
         <!--<dependency>-->
         <!--<groupId>org.ow2.asm</groupId>-->
         <!--<artifactId>asm</artifactId>-->
-        <!--<version>4.2</version>-->
+        <!--<version>5.1</version>-->
+        <!--<classifier>sources</classifier>-->
         <!--</dependency>-->
         <!--<dependency>-->
         <!--<groupId>org.ow2.asm</groupId>-->
         <!--<artifactId>asm-analysis</artifactId>-->
-        <!--<version>4.2</version>-->
+        <!--<version>5.1</version>-->
+        <!--<classifier>sources</classifier>-->
         <!--</dependency>-->
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-all</artifactId>
-            <version>5.1</version>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.ow2.asm</groupId>-->
+        <!--<artifactId>asm-all</artifactId>-->
+        <!--<version>5.1</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -77,10 +79,10 @@
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <!--<configuration>-->
-                    <!--<archive>-->
-                        <!--<addMavenDescriptor>false</addMavenDescriptor>-->
-                        <!--<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>-->
-                    <!--</archive>-->
+                <!--<archive>-->
+                <!--<addMavenDescriptor>false</addMavenDescriptor>-->
+                <!--<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>-->
+                <!--</archive>-->
                 <!--</configuration>-->
             </plugin>
             <plugin>
@@ -103,6 +105,25 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>lib/asm-5.1-sources</source>
+                            </sources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
