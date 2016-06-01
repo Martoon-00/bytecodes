@@ -52,8 +52,9 @@ public class ControlFlow extends Analyzer<LinkValue> {
     @Override
     public Frame<LinkValue>[] analyze(String owner, MethodNode m) throws AnalyzerException {
         Frame<LinkValue>[] results = super.analyze(owner, m);
-        Frame<LinkValue> initFrame = results[0];
 
+        // replace values at initial frame with method parameter references
+        Frame<LinkValue> initFrame = results[0];
         MethodRef method = interpreter.getMethod();
         Type[] argTypes = Type.getArgumentTypes(method.getDesc());
         boolean isStatic = (m.access & Opcodes.ACC_STATIC) != 0;
