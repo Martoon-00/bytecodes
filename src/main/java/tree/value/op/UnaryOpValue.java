@@ -7,7 +7,8 @@ import tree.value.AnyValue;
 import tree.value.ConstValue;
 import tree.value.MyValue;
 
-import java.util.Set;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class UnaryOpValue extends MyValue {
     protected final int opcode;
@@ -38,8 +39,10 @@ public abstract class UnaryOpValue extends MyValue {
     public abstract Type getType();
 
     @Override
-    protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
-        MyValue a2 = a.eliminateRecursion(visited, true);
+    protected MyValue proceedElimRec(Map<MyValue, Boolean> visited) {
+        Map<MyValue, Boolean> complicatedVis = visited.keySet().stream()
+                .collect(Collectors.toMap(k -> k, k -> Boolean.TRUE));
+        MyValue a2 = a.eliminateRecursion(complicatedVis);
         return UnaryOpValue.of(opcode, a2);
     }
 

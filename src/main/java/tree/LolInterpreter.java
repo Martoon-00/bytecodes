@@ -108,13 +108,13 @@ public class LolInterpreter extends Interpreter<LinkValue> {
                 } else if (cst instanceof Double) {
                     answer = new ConstValue(Type.DOUBLE_TYPE, cst);
                 } else if (cst instanceof String) {
-                    answer = new ConstValue(Type.getObjectType("java/lang/String"), cst);
+                    answer = new ConstValue(Type.getObjectType("java/lang/Object"), cst);
                 } else if (cst instanceof Type) {
                     int sort = ((Type) cst).getSort();
                     if (sort == Type.OBJECT || sort == Type.ARRAY) {
-                        answer = AnyValue.of((Type.getObjectType("java/lang/Class")));
+                        answer = ObjValue.of((Type.getObjectType("java/lang/Class")));
                     } else if (sort == Type.METHOD) {
-                        answer = AnyValue.of((Type.getObjectType("java/lang/invoke/MethodType")));
+                        answer = ObjValue.of((Type.getObjectType("java/lang/invoke/MethodType")));
                     } else {
                         throw new IllegalArgumentException("Illegal LDC constant " + cst);
                     }

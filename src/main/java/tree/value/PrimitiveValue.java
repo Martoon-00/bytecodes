@@ -2,7 +2,7 @@ package tree.value;
 
 import org.objectweb.asm.Type;
 
-import java.util.Set;
+import java.util.Map;
 
 public abstract class PrimitiveValue extends MyValue {
     public PrimitiveValue(Type type) {
@@ -10,7 +10,7 @@ public abstract class PrimitiveValue extends MyValue {
     }
 
     @Override
-    protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
+    protected MyValue proceedElimRec(Map<MyValue, Boolean> visited) {
         return this;
     }
 

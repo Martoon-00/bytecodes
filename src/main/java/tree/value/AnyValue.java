@@ -4,7 +4,7 @@ import inter.InterContext;
 import org.objectweb.asm.Type;
 
 public class AnyValue extends PrimitiveValue {
-    private AnyValue(Type type) {
+    protected AnyValue(Type type) {
         super(type);
     }
 

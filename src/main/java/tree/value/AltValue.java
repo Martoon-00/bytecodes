@@ -4,6 +4,7 @@ import inter.InterContext;
 import org.objectweb.asm.Type;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,9 +43,9 @@ public class AltValue extends MyValue {
     }
 
     @Override
-    protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
+    protected MyValue proceedElimRec(Map<MyValue, Boolean> visited) {
         Set<MyValue> res = alternatives.stream()
-                .map(alt -> alt.eliminateRecursion(visited, complicated))
+                .map(alt -> alt.eliminateRecursion(visited))
                 .collect(Collectors.toSet());
         return new AltValue(getType(), res);
     }

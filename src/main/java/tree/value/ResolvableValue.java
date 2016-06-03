@@ -4,7 +4,7 @@ import com.sun.istack.internal.NotNull;
 import inter.InterContext;
 import org.objectweb.asm.Type;
 
-import java.util.Set;
+import java.util.Map;
 
 public abstract class ResolvableValue extends LinkValue {
     protected boolean resolved;
@@ -14,8 +14,8 @@ public abstract class ResolvableValue extends LinkValue {
     }
 
     @Override
-    protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
-        return resolved ? super.proceedElimRec(visited, complicated) : this;
+    protected MyValue proceedElimRec(Map<MyValue, Boolean> visited) {
+        return resolved ? super.proceedElimRec(visited) : this;
     }
 
     @Override

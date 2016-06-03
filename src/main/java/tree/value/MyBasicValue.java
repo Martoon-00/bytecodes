@@ -4,7 +4,7 @@ import inter.InterContext;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.analysis.BasicValue;
 
-import java.util.Set;
+import java.util.Map;
 
 public class MyBasicValue extends MyValue {
     private MyBasicValue(Type type) {
@@ -20,7 +20,7 @@ public class MyBasicValue extends MyValue {
 //    }
 
     @Override
-    protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
+    protected MyValue proceedElimRec(Map<MyValue, Boolean> visited) {
 //        if (value instanceof MyValue) {
 //            return ((MyValue) value).eliminateRecursion(visited, complicated);
 //        } else {

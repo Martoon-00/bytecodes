@@ -3,17 +3,22 @@ package tree;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.Frame;
 import org.objectweb.asm.tree.analysis.Interpreter;
+import scan.MethodRef;
+import scan.except.InvalidBytecodeException;
 import tree.value.AltValue;
 import tree.value.LinkValue;
 
 public class LolFrame extends Frame<LinkValue> {
+    private final MethodRef method;
 
-    public LolFrame(int nLocals, int nStack) {
+    public LolFrame(int nLocals, int nStack, MethodRef method) {
         super(nLocals, nStack);
+        this.method = method;
     }
 
-    public LolFrame(Frame<? extends LinkValue> src) {
+    public LolFrame(Frame<? extends LinkValue> src, MethodRef method) {
         super(src);
+        this.method = method;
         // wrap to links, needed on moving forward
         for (int i = 0; i < getLocals(); i++) {
             setLocal(i, LinkValue.of(getLocal(i)));
@@ -31,8 +36,12 @@ public class LolFrame extends Frame<LinkValue> {
     @Override
     public boolean merge(Frame<? extends LinkValue> frame, Interpreter<LinkValue> interpreter)
             throws AnalyzerException {
+        return merge(frame);
+    }
+
+    private boolean merge(Frame<? extends LinkValue> frame) {
         if (getLocals() != frame.getLocals() || getStackSize() != frame.getStackSize())
-            throw new AnalyzerException(null, "Merged frames have different stack size or locals number");
+            throw new InvalidBytecodeException(method, "Merged frames have different stack size or locals number");
 
         // locals
         for (int i = 0; i < getLocals(); i++) {
@@ -45,6 +54,13 @@ public class LolFrame extends Frame<LinkValue> {
         return false;
     }
 
+    @Override
+    public boolean merge(Frame<? extends LinkValue> frame, boolean[] access) {
+        // TODO:
+        return this.merge(frame);
+//        return super.merge(frame, access);
+    }
+
     private void merge(LinkValue v, LinkValue w) {
         // for case of same links
 //        if (v == w)
@@ -54,13 +70,6 @@ public class LolFrame extends Frame<LinkValue> {
         if (LinkValue.sameValue(v, w))
             return;
         v.replaceEntry(x -> LinkValue.of(AltValue.of(x, w)));
-    }
-
-    @Override
-    public boolean merge(Frame<? extends LinkValue> frame, boolean[] access) {
-        // TODO:
-        throw new UnsupportedOperationException();
-//        return super.merge(frame, access);
     }
 
 }

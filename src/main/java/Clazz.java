@@ -9,7 +9,7 @@ public class Clazz {
             a = b;
             b = t;
         }
-        myMethod(a);
+        myMethod(a + b);
         return 5;
     }
 

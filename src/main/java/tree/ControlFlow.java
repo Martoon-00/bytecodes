@@ -21,14 +21,18 @@ public class ControlFlow extends Analyzer<LinkValue> {
         this.interpreter = interpreter;
     }
 
+    private MethodRef getMethod() {
+        return interpreter.getMethod();
+    }
+
     @Override
     protected Frame<LinkValue> newFrame(int nLocals, int nStack) {
-        return new LolFrame(nLocals, nStack);
+        return new LolFrame(nLocals, nStack, getMethod());
     }
 
     @Override
     protected Frame<LinkValue> newFrame(Frame<? extends LinkValue> src) {
-        return new LolFrame(src);
+        return new LolFrame(src, getMethod());
     }
 
     @Override
@@ -55,7 +59,7 @@ public class ControlFlow extends Analyzer<LinkValue> {
 
         // replace values at initial frame with method parameter references
         Frame<LinkValue> initFrame = results[0];
-        MethodRef method = interpreter.getMethod();
+        MethodRef method = getMethod();
         Type[] argTypes = Type.getArgumentTypes(method.getDesc());
         boolean isStatic = (m.access & Opcodes.ACC_STATIC) != 0;
         int argNum = (isStatic ? 0 : 1) + argTypes.length;

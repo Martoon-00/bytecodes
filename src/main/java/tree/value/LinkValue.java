@@ -4,7 +4,7 @@ import com.sun.istack.internal.NotNull;
 import inter.InterContext;
 import org.objectweb.asm.Type;
 
-import java.util.Set;
+import java.util.Map;
 import java.util.function.Function;
 
 public class LinkValue extends MyValue implements Replaceable {
@@ -36,9 +36,8 @@ public class LinkValue extends MyValue implements Replaceable {
     }
 
     @Override
-    protected MyValue proceedElimRec(Set<MyValue> visited, boolean complicated) {
-        // TODO: not LinkValue.of(...)? Join with simplify?
-        value = value.eliminateRecursion(visited, complicated);
+    protected MyValue proceedElimRec(Map<MyValue, Boolean> visited) {
+        value = value.eliminateRecursion(visited);
         return this;
     }
 

@@ -5,8 +5,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import scan.except.InvalidBytecodeException;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class MyValue extends BasicValue {
     public MyValue(Type type) {
@@ -32,21 +32,25 @@ public abstract class MyValue extends BasicValue {
      *                    Needed for case V1 = V1 | V2, V2 = V2 | V1 (answer)
      * @return value without recursion
      */
-    protected abstract MyValue proceedElimRec(Set<MyValue> visited, boolean complicated);
+    protected abstract MyValue proceedElimRec(Map<MyValue, Boolean> visited);
 
-    public final MyValue eliminateRecursion(Set<MyValue> visited, boolean complicated) {
-        boolean added = visited.add(this);
-        if (!added) {
-            return complicated ? AnyValue.of(getType()) : new NoValue();
+    public final MyValue eliminateRecursion(Map<MyValue, Boolean> visited) {
+        boolean exists = visited.containsKey(this);
+        if (exists) {
+            return visited.get(this) ? AnyValue.of(getType()) : new NoValue();
         } else {
-            MyValue res = proceedElimRec(visited, complicated);
+            visited.put(this, false);
+            int size = visited.size();
+            MyValue res = proceedElimRec(visited);
+            if (visited.size() != size)
+                throw new Error();
             visited.remove(this);
             return res;
         }
     }
 
     public final MyValue eliminateRecursion() {
-        return eliminateRecursion(new HashSet<>(), false);
+        return eliminateRecursion(new HashMap<>());
     }
 
     public abstract MyValue simplify();
@@ -56,8 +60,9 @@ public abstract class MyValue extends BasicValue {
         Type t2 = v2.getType();
         if (t1 == null || t2 == null)
             return;
-        if (t1.toString().endsWith(";") && t2.toString().endsWith(";"))
-            return;
+        // for String == Object
+//        if (t1.toString().endsWith(";") && t2.toString().endsWith(";"))
+//            return;
         if (!t1.equals(t2))
             throw new InvalidBytecodeException(String.format("Alternatives with different types: %s vs %s", t1, t2));
     }
