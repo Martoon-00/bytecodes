@@ -1,4 +1,4 @@
-package intra;
+package inter;
 
 import scan.MethodRef;
 import tree.effect.MethodCallEffect;
@@ -10,10 +10,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class IntraAnalyzer {
-    private final IntraContext context;
+public class InterAnalyzer {
+    private final InterContext context;
 
-    public IntraAnalyzer(IntraContext context) {
+    public InterAnalyzer(InterContext context) {
         this.context = context;
     }
 

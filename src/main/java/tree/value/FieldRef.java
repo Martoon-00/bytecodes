@@ -1,6 +1,6 @@
 package tree.value;
 
-import intra.IntraContext;
+import inter.InterContext;
 import org.objectweb.asm.Type;
 
 import java.util.Objects;
@@ -26,7 +26,7 @@ public class FieldRef extends ResolvableValue {
     }
 
     @Override
-    protected MyValue resolveUnresolved(IntraContext context, int depth) {
+    protected MyValue resolveUnresolved(InterContext context, int depth) {
         return context.getFieldValues(this);
     }
 

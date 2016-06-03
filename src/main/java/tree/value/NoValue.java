@@ -1,6 +1,6 @@
 package tree.value;
 
-import intra.IntraContext;
+import inter.InterContext;
 
 public class NoValue extends PrimitiveValue {
     public NoValue() {
@@ -8,7 +8,7 @@ public class NoValue extends PrimitiveValue {
     }
 
     @Override
-    public MyValue resolveReferences(IntraContext context, int depth) {
+    public MyValue resolveReferences(InterContext context, int depth) {
         return this;
     }
 

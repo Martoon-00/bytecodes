@@ -1,6 +1,6 @@
 package tree.value;
 
-import intra.IntraContext;
+import inter.InterContext;
 import org.objectweb.asm.Type;
 
 public class NullValue extends PrimitiveValue {
@@ -10,7 +10,7 @@ public class NullValue extends PrimitiveValue {
     }
 
     @Override
-    public MyValue resolveReferences(IntraContext context, int depth) {
+    public MyValue resolveReferences(InterContext context, int depth) {
         return this;
     }
 

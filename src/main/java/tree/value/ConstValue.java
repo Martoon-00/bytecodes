@@ -1,6 +1,6 @@
 package tree.value;
 
-import intra.IntraContext;
+import inter.InterContext;
 import org.objectweb.asm.Type;
 
 import java.util.Objects;
@@ -19,7 +19,7 @@ public class ConstValue extends PrimitiveValue {
     }
 
     @Override
-    public MyValue resolveReferences(IntraContext context, int depth) {
+    public MyValue resolveReferences(InterContext context, int depth) {
         return this;
     }
 

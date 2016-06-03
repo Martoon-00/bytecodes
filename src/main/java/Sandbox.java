@@ -1,5 +1,5 @@
-import intra.IntraAnalyzer;
-import intra.PreAnalyzedIntraContext;
+import inter.InterAnalyzer;
+import inter.PreAnalyzedInterContext;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 import scan.MethodRef;
 import tree.ClassScanner;
@@ -44,8 +44,8 @@ public class Sandbox {
         }
 
         ArrayList<MethodRef> methods = new ArrayList<>(results.keySet());
-        PreAnalyzedIntraContext context = new PreAnalyzedIntraContext(results.values());
-        IntraAnalyzer intraAnalyzer = new IntraAnalyzer(context);
+        PreAnalyzedInterContext context = new PreAnalyzedInterContext(results.values());
+        InterAnalyzer interAnalyzer = new InterAnalyzer(context);
 
         Optional<MethodRef> lol = methods.stream()
                 .filter(m -> m.getName().equals(methodName))
@@ -54,7 +54,7 @@ public class Sandbox {
             throw new RuntimeException("No " + methodName + " method defined");
         MethodRef searchedMethod = lol.get();
 
-        Optional<List<MyValue>> maybeResult = intraAnalyzer.analyzePassedParams(searchedMethod, depth, remainReferences);
+        Optional<List<MyValue>> maybeResult = interAnalyzer.analyzePassedParams(searchedMethod, depth, remainReferences);
         if (!maybeResult.isPresent()) {
             System.out.println("No usages found");
             return;

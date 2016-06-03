@@ -1,16 +1,20 @@
 public class Clazz {
     static int f;
 
-    public static void main(String[] args) {
-        myMethod(2, 3);
+    public int foo(int i, int j) {
+        int a = 1;
+        int b = 2;
+        while (a < 30) {
+            int t = a;
+            a = b;
+            b = t;
+        }
+        myMethod(a);
+        return 5;
     }
 
-    public static void myMethod(int a, int n) {
-        int r = 1;
-        for (int i = 0; i < n; i++) {
-            r *= a;
-        }
-        System.out.println(r);
+    public static void myMethod(int a) {
+        System.out.println();
     }
 
 }

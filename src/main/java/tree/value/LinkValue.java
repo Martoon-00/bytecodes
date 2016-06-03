@@ -1,7 +1,7 @@
 package tree.value;
 
 import com.sun.istack.internal.NotNull;
-import intra.IntraContext;
+import inter.InterContext;
 import org.objectweb.asm.Type;
 
 import java.util.Set;
@@ -48,7 +48,7 @@ public class LinkValue extends MyValue implements Replaceable {
     }
 
     @Override
-    public MyValue resolveReferences(IntraContext context, int depth) {
+    public MyValue resolveReferences(InterContext context, int depth) {
         value = value.resolveReferences(context, depth);
         return this;
     }

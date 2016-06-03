@@ -1,6 +1,6 @@
 package tree.value;
 
-import intra.IntraContext;
+import inter.InterContext;
 import org.objectweb.asm.Type;
 import scan.MethodRef;
 import tree.effect.MethodCallEffect;
@@ -26,7 +26,7 @@ public class MethodParamValue extends ResolvableValue {
         return index;
     }
 
-    protected MyValue resolveUnresolved(IntraContext context, int depth) {
+    protected MyValue resolveUnresolved(InterContext context, int depth) {
         return AltValue.of(context.getCallEffects(method).stream()
                 .map(this::getParamFromEffect)
                 .map(MyValue::copy)

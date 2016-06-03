@@ -1,6 +1,6 @@
 package tree.value;
 
-import intra.IntraContext;
+import inter.InterContext;
 import org.objectweb.asm.Type;
 
 import java.util.HashSet;
@@ -68,7 +68,7 @@ public class AltValue extends MyValue {
     }
 
     @Override
-    public MyValue resolveReferences(IntraContext context, int depth) {
+    public MyValue resolveReferences(InterContext context, int depth) {
         return AltValue.of(alternatives.stream()
                 .map(v -> v.resolveReferences(context, depth))
                 .toArray(MyValue[]::new));

@@ -1,6 +1,6 @@
 package tree.value.op;
 
-import intra.IntraContext;
+import inter.InterContext;
 import org.objectweb.asm.Type;
 import scan.except.UnsupportedOpcodeException;
 import tree.value.AltValue;
@@ -91,7 +91,7 @@ public abstract class BinOpValue extends MyValue {
     protected abstract MyValue evaluate(ConstValue a, ConstValue b);
 
     @Override
-    public MyValue resolveReferences(IntraContext context, int depth) {
+    public MyValue resolveReferences(InterContext context, int depth) {
         MyValue a2 = this.a.resolveReferences(context, depth);
         MyValue b2 = this.b.resolveReferences(context, depth);
         return BinOpValue.of(opcode, a2, b2);

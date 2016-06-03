@@ -1,6 +1,6 @@
 package tree.value;
 
-import intra.IntraContext;
+import inter.InterContext;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import scan.except.InvalidBytecodeException;
@@ -62,7 +62,7 @@ public abstract class MyValue extends BasicValue {
             throw new InvalidBytecodeException(String.format("Alternatives with different types: %s vs %s", t1, t2));
     }
 
-    public abstract MyValue resolveReferences(IntraContext context, int depth);
+    public abstract MyValue resolveReferences(InterContext context, int depth);
 
     public abstract MyValue eliminateReferences();
 

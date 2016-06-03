@@ -1,7 +1,7 @@
 package tree.value;
 
 import com.sun.istack.internal.NotNull;
-import intra.IntraContext;
+import inter.InterContext;
 import org.objectweb.asm.Type;
 
 import java.util.Set;
@@ -19,7 +19,7 @@ public abstract class ResolvableValue extends LinkValue {
     }
 
     @Override
-    public final MyValue resolveReferences(IntraContext context, int depth) {
+    public final MyValue resolveReferences(InterContext context, int depth) {
         if (!resolved) {  // if already resolved, we can be in recursion
             resolved = true;
             MyValue values = resolveUnresolved(context, depth);
@@ -28,7 +28,7 @@ public abstract class ResolvableValue extends LinkValue {
         return this;
     }
 
-    protected abstract MyValue resolveUnresolved(IntraContext context, int depth);
+    protected abstract MyValue resolveUnresolved(InterContext context, int depth);
 
     @Override
     public MyValue copy() {
