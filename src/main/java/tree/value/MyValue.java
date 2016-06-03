@@ -27,9 +27,8 @@ public abstract class MyValue extends BasicValue {
     /**
      * Whether it is recursive value and nether can be fully counted
      *
-     * @param visited     set of visited objects
-     * @param complicated whether values beneath are wrapped.
-     *                    Needed for case V1 = V1 | V2, V2 = V2 | V1 (answer)
+     * @param visited for each node above this in tree - whether is there a complicating node between it and this
+     *                (unary or binary operation)
      * @return value without recursion
      */
     protected abstract MyValue proceedElimRec(Map<MyValue, Boolean> visited);
